@@ -19,11 +19,11 @@ for /f "tokens=5" %%a in ('netstat -ano 2^>nul ^| findstr ":%TARGET_PORT% " ^| f
 
 if not defined BUSY_PID goto :port_free
 
-:: Port is busy — show process info and options
+:: Port is busy - show process info and options
 echo  [!] Port %TARGET_PORT% is already in use:
 echo.
 for /f "tokens=1" %%n in ('tasklist /FI "PID eq %BUSY_PID%" /FO TABLE /NH 2^>nul') do (
-    echo       Process: %%n  (PID %BUSY_PID%)
+    echo       Process: %%n  ^(PID %BUSY_PID%^)
 )
 echo.
 echo  What would you like to do?
@@ -44,7 +44,6 @@ if "!CHOICE!"=="1" (
 
 if "!CHOICE!"=="2" (
     echo.
-    :: Find next available port
     for /l %%p in (5181,1,5199) do (
         netstat -ano 2>nul | findstr ":%%p " | findstr "LISTENING" >nul 2>&1
         if errorlevel 1 (
@@ -80,13 +79,13 @@ echo  [OK] Cache cleaned
 :: Start dev server
 echo  [3/3] Starting dev server...
 echo.
-echo  Game will open at: http://localhost:%TARGET_PORT%
+echo  Game will open at: http://localhost:!TARGET_PORT!
 echo.
 
 :: Open browser after 3 seconds
-start /b cmd /c "timeout /t 3 /nobreak >nul && start http://localhost:%TARGET_PORT%"
+start /b cmd /c "timeout /t 3 /nobreak >nul && start http://localhost:!TARGET_PORT!"
 
 :: Start Vite dev server
-call npx vite --port %TARGET_PORT%
+call npx vite --port !TARGET_PORT!
 
 pause
