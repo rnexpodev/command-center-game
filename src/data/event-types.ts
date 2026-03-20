@@ -233,6 +233,203 @@ export const EVENT_TYPE_INFO: Record<EventType, EventTypeInfo> = {
     needsEvacuation: true,
     infrastructureDamage: false,
   },
+
+  // ===== Missile Strike Event Types =====
+
+  [EventType.MISSILE_DIRECT_HIT]: {
+    type: EventType.MISSILE_DIRECT_HIT,
+    nameHe: "פגיעה ישירה",
+    descriptionHe:
+      "פגיעה ישירה של טיל בבניין. סכנת קריסה, שריפה ולכודים. נדרשים כל צוותי החירום.",
+    defaultSeverity: Severity.CRITICAL,
+    requiredForces: [
+      ForceType.RESCUE,
+      ForceType.FIRE,
+      ForceType.MAGEN_DAVID,
+      ForceType.POLICE,
+      ForceType.ENGINEERING,
+      ForceType.HOMEFRONT,
+    ],
+    escalationTimer: 30,
+    resolveRate: 0.3,
+    threatRadius: 150,
+    blocksRoad: true,
+    fireDanger: true,
+    collapseDanger: true,
+    needsEvacuation: true,
+    infrastructureDamage: true,
+    chainEvents: [
+      { type: EventType.BUILDING_FIRE, delay: 5, probability: 0.8 },
+      { type: EventType.BUILDING_COLLAPSE, delay: 15, probability: 0.6 },
+      { type: EventType.GAS_LEAK, delay: 10, probability: 0.5 },
+      { type: EventType.ROAD_BLOCKAGE, delay: 3, probability: 0.9 },
+      { type: EventType.POWER_OUTAGE, delay: 8, probability: 0.7 },
+    ],
+  },
+
+  [EventType.MISSILE_OPEN_AREA]: {
+    type: EventType.MISSILE_OPEN_AREA,
+    nameHe: "נפילה בשטח פתוח",
+    descriptionHe:
+      "נפילת טיל בשטח פתוח. נזק מוגבל אך ייתכנו נפגעים מרסיסים. נדרש סריקה ואבטחה.",
+    defaultSeverity: Severity.LOW,
+    requiredForces: [
+      ForceType.POLICE,
+      ForceType.MAGEN_DAVID,
+      ForceType.HOMEFRONT,
+    ],
+    escalationTimer: 90,
+    resolveRate: 1.8,
+    threatRadius: 80,
+    blocksRoad: false,
+    fireDanger: false,
+    collapseDanger: false,
+    needsEvacuation: false,
+    infrastructureDamage: false,
+    chainEvents: [
+      { type: EventType.ROAD_BLOCKAGE, delay: 10, probability: 0.3 },
+    ],
+  },
+
+  [EventType.MISSILE_NEAR_BUILDING]: {
+    type: EventType.MISSILE_NEAR_BUILDING,
+    nameHe: "פגיעה ליד מבנה",
+    descriptionHe:
+      "נפילת טיל בסמוך למבנה. נזק מבני, חלונות מנופצים, ייתכנו נפגעים מרסיסים וזכוכיות.",
+    defaultSeverity: Severity.HIGH,
+    requiredForces: [
+      ForceType.MAGEN_DAVID,
+      ForceType.POLICE,
+      ForceType.FIRE,
+      ForceType.ENGINEERING,
+    ],
+    escalationTimer: 45,
+    resolveRate: 0.7,
+    threatRadius: 100,
+    blocksRoad: true,
+    fireDanger: true,
+    collapseDanger: false,
+    needsEvacuation: true,
+    infrastructureDamage: true,
+    chainEvents: [
+      { type: EventType.BUILDING_FIRE, delay: 10, probability: 0.4 },
+      { type: EventType.EVACUATION_NEEDED, delay: 15, probability: 0.6 },
+      { type: EventType.POWER_OUTAGE, delay: 12, probability: 0.4 },
+    ],
+  },
+
+  [EventType.MISSILE_NEAR_SENSITIVE]: {
+    type: EventType.MISSILE_NEAR_SENSITIVE,
+    nameHe: "פגיעה ליד מוסד רגיש",
+    descriptionHe:
+      "פגיעת טיל בסמוך למוסד רגיש (בית ספר, בית חולים, מבנה ציבורי). עדיפות גבוהה לאבטחה ופינוי.",
+    defaultSeverity: Severity.CRITICAL,
+    requiredForces: [
+      ForceType.POLICE,
+      ForceType.MAGEN_DAVID,
+      ForceType.FIRE,
+      ForceType.EVACUATION,
+      ForceType.WELFARE,
+      ForceType.HOMEFRONT,
+    ],
+    escalationTimer: 20,
+    resolveRate: 0.5,
+    threatRadius: 200,
+    blocksRoad: true,
+    fireDanger: true,
+    collapseDanger: false,
+    needsEvacuation: true,
+    infrastructureDamage: true,
+    escalationTarget: EventType.MASS_CASUALTY,
+    chainEvents: [
+      { type: EventType.EVACUATION_NEEDED, delay: 5, probability: 0.9 },
+      { type: EventType.MASS_CASUALTY, delay: 20, probability: 0.4 },
+      { type: EventType.BUILDING_FIRE, delay: 8, probability: 0.3 },
+    ],
+  },
+
+  [EventType.INTERCEPTION_DEBRIS]: {
+    type: EventType.INTERCEPTION_DEBRIS,
+    nameHe: "שברי יירוט",
+    descriptionHe:
+      "שברי טיל שיורט על ידי כיפת ברזל נפלו באזור מגורים. נזק קל-בינוני, ייתכנו נפגעים.",
+    defaultSeverity: Severity.MEDIUM,
+    requiredForces: [ForceType.POLICE, ForceType.MAGEN_DAVID, ForceType.FIRE],
+    escalationTimer: 60,
+    resolveRate: 1.2,
+    threatRadius: 60,
+    blocksRoad: false,
+    fireDanger: true,
+    collapseDanger: false,
+    needsEvacuation: false,
+    infrastructureDamage: false,
+    chainEvents: [
+      { type: EventType.BUILDING_FIRE, delay: 5, probability: 0.3 },
+      { type: EventType.ROAD_BLOCKAGE, delay: 8, probability: 0.2 },
+    ],
+  },
+
+  [EventType.MISSILE_ROAD_HIT]: {
+    type: EventType.MISSILE_ROAD_HIT,
+    nameHe: "פגיעה בכביש/צומת",
+    descriptionHe:
+      "פגיעת טיל בכביש ראשי או צומת. מכתש בכביש, ייתכנו נפגעים ברכבים. חסימת תנועה מוחלטת.",
+    defaultSeverity: Severity.HIGH,
+    requiredForces: [
+      ForceType.POLICE,
+      ForceType.MAGEN_DAVID,
+      ForceType.ENGINEERING,
+      ForceType.INFRASTRUCTURE,
+    ],
+    escalationTimer: 50,
+    resolveRate: 0.6,
+    threatRadius: 80,
+    blocksRoad: true,
+    fireDanger: true,
+    collapseDanger: false,
+    needsEvacuation: false,
+    infrastructureDamage: true,
+    chainEvents: [
+      { type: EventType.ROAD_BLOCKAGE, delay: 2, probability: 1.0 },
+      { type: EventType.POWER_OUTAGE, delay: 15, probability: 0.5 },
+      { type: EventType.GAS_LEAK, delay: 10, probability: 0.3 },
+    ],
+  },
+
+  [EventType.MISSILE_COMPOUND]: {
+    type: EventType.MISSILE_COMPOUND,
+    nameHe: "אירוע משולב",
+    descriptionHe:
+      "אירוע מורכב הכולל מספר סוגי נזק — שריפה, קריסה, לכודים ונזק תשתיתי. נדרש ריכוז כל המשאבים.",
+    defaultSeverity: Severity.CRITICAL,
+    requiredForces: [
+      ForceType.RESCUE,
+      ForceType.FIRE,
+      ForceType.MAGEN_DAVID,
+      ForceType.POLICE,
+      ForceType.ENGINEERING,
+      ForceType.INFRASTRUCTURE,
+      ForceType.HOMEFRONT,
+      ForceType.EVACUATION,
+    ],
+    escalationTimer: 20,
+    resolveRate: 0.2,
+    threatRadius: 200,
+    blocksRoad: true,
+    fireDanger: true,
+    collapseDanger: true,
+    needsEvacuation: true,
+    infrastructureDamage: true,
+    chainEvents: [
+      { type: EventType.BUILDING_COLLAPSE, delay: 10, probability: 0.7 },
+      { type: EventType.BUILDING_FIRE, delay: 3, probability: 0.9 },
+      { type: EventType.GAS_LEAK, delay: 8, probability: 0.6 },
+      { type: EventType.MASS_CASUALTY, delay: 15, probability: 0.5 },
+      { type: EventType.POWER_OUTAGE, delay: 5, probability: 0.8 },
+      { type: EventType.ROAD_BLOCKAGE, delay: 2, probability: 0.95 },
+      { type: EventType.EVACUATION_NEEDED, delay: 12, probability: 0.8 },
+    ],
+  },
 };
 
 /**

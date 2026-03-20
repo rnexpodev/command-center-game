@@ -58,6 +58,14 @@ export const EventType = {
   FLOODING: "flooding",
   MASS_CASUALTY: "mass_casualty",
   EVACUATION_NEEDED: "evacuation_needed",
+  // Missile strike event types
+  MISSILE_DIRECT_HIT: "missile_direct_hit",
+  MISSILE_OPEN_AREA: "missile_open_area",
+  MISSILE_NEAR_BUILDING: "missile_near_building",
+  MISSILE_NEAR_SENSITIVE: "missile_near_sensitive",
+  INTERCEPTION_DEBRIS: "interception_debris",
+  MISSILE_ROAD_HIT: "missile_road_hit",
+  MISSILE_COMPOUND: "missile_compound",
 } as const;
 export type EventType = (typeof EventType)[keyof typeof EventType];
 
@@ -107,6 +115,7 @@ export interface GameEvent {
   escalationTimer: number;
   escalationTarget?: EventType;
   chainEvents?: ChainEventDef[];
+  missileExtension?: MissileEventExtension;
   resolveProgress: number;
   resolveRate: number;
 }
@@ -116,6 +125,30 @@ export interface ChainEventDef {
   type: EventType;
   delay: number;
   probability: number;
+}
+
+/** A progressive information update that reveals data over time (fog of war) */
+export interface InformationUpdate {
+  tick: number;
+  message: string;
+  revealsData: Partial<GameEvent>;
+}
+
+/** Missile-specific extension data for missile strike events */
+export interface MissileEventExtension {
+  impactType:
+    | "direct"
+    | "open_area"
+    | "near_building"
+    | "near_sensitive"
+    | "debris"
+    | "road"
+    | "compound";
+  warheadType: "qassam" | "grad" | "fajr" | "ballistic" | "cruise" | "debris";
+  initialUncertainty: boolean;
+  informationUpdates: InformationUpdate[];
+  civilianPanic: boolean;
+  secondaryRisks: string[];
 }
 
 /** A dispatched or available unit */

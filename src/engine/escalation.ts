@@ -105,6 +105,82 @@ const ESCALATION_RULES: Record<EventType, EscalationRule> = {
     casualtiesPerEscalation: 2,
     radiusGrowth: 40,
   },
+  // Missile strike escalation rules
+  [EventType.MISSILE_DIRECT_HIT]: {
+    timer: 25,
+    severityIncrease: 1,
+    casualtiesPerEscalation: 6,
+    radiusGrowth: 40,
+    chainEvents: [
+      { type: EventType.BUILDING_COLLAPSE, delay: 10, probability: 0.6 },
+      { type: EventType.BUILDING_FIRE, delay: 5, probability: 0.7 },
+      { type: EventType.ROAD_BLOCKAGE, delay: 8, probability: 0.8 },
+      { type: EventType.POWER_OUTAGE, delay: 15, probability: 0.5 },
+      { type: EventType.GAS_LEAK, delay: 12, probability: 0.4 },
+    ],
+  },
+  [EventType.MISSILE_OPEN_AREA]: {
+    timer: 60,
+    severityIncrease: 1,
+    casualtiesPerEscalation: 1,
+    radiusGrowth: 20,
+    chainEvents: [
+      { type: EventType.ROAD_BLOCKAGE, delay: 10, probability: 0.5 },
+    ],
+  },
+  [EventType.MISSILE_NEAR_BUILDING]: {
+    timer: 35,
+    severityIncrease: 1,
+    casualtiesPerEscalation: 3,
+    radiusGrowth: 30,
+    chainEvents: [
+      { type: EventType.BUILDING_FIRE, delay: 10, probability: 0.4 },
+      { type: EventType.EVACUATION_NEEDED, delay: 15, probability: 0.6 },
+      { type: EventType.POWER_OUTAGE, delay: 20, probability: 0.3 },
+    ],
+  },
+  [EventType.MISSILE_NEAR_SENSITIVE]: {
+    timer: 20,
+    severityIncrease: 1,
+    casualtiesPerEscalation: 4,
+    radiusGrowth: 25,
+    chainEvents: [
+      { type: EventType.EVACUATION_NEEDED, delay: 5, probability: 0.9 },
+      { type: EventType.MASS_CASUALTY, delay: 25, probability: 0.3 },
+    ],
+  },
+  [EventType.INTERCEPTION_DEBRIS]: {
+    timer: 50,
+    severityIncrease: 1,
+    casualtiesPerEscalation: 1,
+    radiusGrowth: 15,
+    chainEvents: [
+      { type: EventType.BUILDING_FIRE, delay: 8, probability: 0.3 },
+    ],
+  },
+  [EventType.MISSILE_ROAD_HIT]: {
+    timer: 45,
+    severityIncrease: 1,
+    casualtiesPerEscalation: 2,
+    radiusGrowth: 30,
+    chainEvents: [
+      { type: EventType.ROAD_BLOCKAGE, delay: 3, probability: 0.95 },
+      { type: EventType.POWER_OUTAGE, delay: 20, probability: 0.3 },
+    ],
+  },
+  [EventType.MISSILE_COMPOUND]: {
+    timer: 20,
+    severityIncrease: 1,
+    casualtiesPerEscalation: 5,
+    radiusGrowth: 50,
+    chainEvents: [
+      { type: EventType.BUILDING_COLLAPSE, delay: 8, probability: 0.5 },
+      { type: EventType.BUILDING_FIRE, delay: 5, probability: 0.8 },
+      { type: EventType.GAS_LEAK, delay: 10, probability: 0.5 },
+      { type: EventType.EVACUATION_NEEDED, delay: 12, probability: 0.7 },
+      { type: EventType.ROAD_BLOCKAGE, delay: 6, probability: 0.9 },
+    ],
+  },
 };
 
 /** Get escalation rules for a given event type */
