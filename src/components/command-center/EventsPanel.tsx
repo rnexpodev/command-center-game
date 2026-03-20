@@ -1,16 +1,4 @@
-import {
-  Flame,
-  Car,
-  Building2,
-  Zap,
-  CloudRain,
-  AlertTriangle,
-  Construction,
-  Skull,
-  Users,
-  Waypoints,
-  ShieldAlert,
-} from "lucide-react";
+import { ShieldAlert, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatGameTime } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
@@ -20,40 +8,13 @@ import {
   severityToVariant,
   severityToLabel,
 } from "@/components/ui/Badge";
+import { ProgressBar } from "@/components/ui/ProgressBar";
+import { EventStatus, Severity, type GameEvent } from "@/engine/types";
 import {
-  EventType,
-  EventStatus,
-  Severity,
-  type GameEvent,
-} from "@/engine/types";
-
-/** Map event type to icon component */
-const eventTypeIcons: Record<string, React.ReactNode> = {
-  [EventType.BUILDING_FIRE]: <Flame className="h-5 w-5" />,
-  [EventType.BUILDING_COLLAPSE]: <Building2 className="h-5 w-5" />,
-  [EventType.TRAFFIC_ACCIDENT]: <Car className="h-5 w-5" />,
-  [EventType.GAS_LEAK]: <CloudRain className="h-5 w-5" />,
-  [EventType.POWER_OUTAGE]: <Zap className="h-5 w-5" />,
-  [EventType.ROAD_BLOCKAGE]: <Construction className="h-5 w-5" />,
-  [EventType.HAZMAT]: <AlertTriangle className="h-5 w-5" />,
-  [EventType.FLOODING]: <CloudRain className="h-5 w-5" />,
-  [EventType.MASS_CASUALTY]: <Skull className="h-5 w-5" />,
-  [EventType.EVACUATION_NEEDED]: <Users className="h-5 w-5" />,
-};
-
-/** Map event type to Hebrew name */
-const eventTypeNames: Record<string, string> = {
-  [EventType.BUILDING_FIRE]: "שריפה במבנה",
-  [EventType.BUILDING_COLLAPSE]: "קריסת מבנה",
-  [EventType.TRAFFIC_ACCIDENT]: "תאונת דרכים",
-  [EventType.GAS_LEAK]: "דליפת גז",
-  [EventType.POWER_OUTAGE]: "הפסקת חשמל",
-  [EventType.ROAD_BLOCKAGE]: "חסימת כביש",
-  [EventType.HAZMAT]: "חומרים מסוכנים",
-  [EventType.FLOODING]: "הצפה",
-  [EventType.MASS_CASUALTY]: "אירוע רב נפגעים",
-  [EventType.EVACUATION_NEEDED]: "פינוי תושבים",
-};
+  EventTypeIcon,
+  eventTypeNames,
+  severityColors,
+} from "@/data/map-icons";
 
 /** Map status to Hebrew */
 const statusNames: Record<string, string> = {
@@ -82,6 +43,12 @@ const severityColor: Record<number, string> = {
   [Severity.CRITICAL]: "text-red-400",
 };
 
+function getProgressVariant(progress: number) {
+  if (progress >= 80) return "success" as const;
+  if (progress >= 40) return "info" as const;
+  return "warning" as const;
+}
+
 export function EventsPanel() {
   const events = useGameStore((s) => s.events);
   const tick = useGameStore((s) => s.tick);
@@ -97,14 +64,12 @@ export function EventsPanel() {
     .sort((a, b) => b.severity - a.severity);
 
   function handleEventClick(event: GameEvent) {
-    // If a unit is selected, dispatch it to this event
     if (selectedUnitId) {
       dispatchUnit(selectedUnitId, event.id);
       selectUnit(null);
       selectEvent(event.id);
       return;
     }
-    // Otherwise, toggle selection
     selectEvent(selectedEventId === event.id ? null : event.id);
   }
 
@@ -162,13 +127,15 @@ export function EventsPanel() {
                 <div className="mb-2 flex items-start gap-2">
                   <span
                     className={cn(
-                      "shrink-0 mt-0.5",
+                      "mt-0.5 shrink-0",
                       severityColor[event.severity],
                     )}
                   >
-                    {eventTypeIcons[event.type] ?? (
-                      <Waypoints className="h-5 w-5" />
-                    )}
+                    <EventTypeIcon
+                      type={event.type}
+                      size={20}
+                      color={severityColors[event.severity] ?? "#71717a"}
+                    />
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-medium text-zinc-100">
@@ -182,6 +149,17 @@ export function EventsPanel() {
                     {severityToLabel(event.severity)}
                   </Badge>
                 </div>
+
+                {/* Progress bar */}
+                {event.resolveProgress > 0 && (
+                  <div className="mb-2">
+                    <ProgressBar
+                      value={event.resolveProgress}
+                      variant={getProgressVariant(event.resolveProgress)}
+                      size="sm"
+                    />
+                  </div>
+                )}
 
                 {/* Bottom row: status + time + units */}
                 <div className="flex items-center gap-2 text-xs">

@@ -1,27 +1,17 @@
 import {
   Flame,
   Building2,
-  Car,
-  CloudRain,
-  Zap,
   Construction,
-  AlertTriangle,
   Skull,
-  Users,
   Send,
   ShieldOff,
   UserMinus,
   Timer,
-  Heart,
-  Shield,
-  HardHat,
-  Wrench,
-  HandHeart,
-  Truck,
-  ShieldCheck,
   X,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatGameTime } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useUIStore } from "@/store/ui-store";
 import {
@@ -31,60 +21,15 @@ import {
 } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { IconButton } from "@/components/ui/IconButton";
-import { EventType, EventStatus, ForceType } from "@/engine/types";
-
-/** Event type names */
-const eventTypeNames: Record<string, string> = {
-  [EventType.BUILDING_FIRE]: "שריפה במבנה",
-  [EventType.BUILDING_COLLAPSE]: "קריסת מבנה",
-  [EventType.TRAFFIC_ACCIDENT]: "תאונת דרכים",
-  [EventType.GAS_LEAK]: "דליפת גז",
-  [EventType.POWER_OUTAGE]: "הפסקת חשמל",
-  [EventType.ROAD_BLOCKAGE]: "חסימת כביש",
-  [EventType.HAZMAT]: "חומרים מסוכנים",
-  [EventType.FLOODING]: "הצפה",
-  [EventType.MASS_CASUALTY]: "אירוע רב נפגעים",
-  [EventType.EVACUATION_NEEDED]: "פינוי תושבים",
-};
-
-/** Event type icons */
-const eventTypeIcons: Record<string, React.ReactNode> = {
-  [EventType.BUILDING_FIRE]: <Flame className="h-5 w-5" />,
-  [EventType.BUILDING_COLLAPSE]: <Building2 className="h-5 w-5" />,
-  [EventType.TRAFFIC_ACCIDENT]: <Car className="h-5 w-5" />,
-  [EventType.GAS_LEAK]: <CloudRain className="h-5 w-5" />,
-  [EventType.POWER_OUTAGE]: <Zap className="h-5 w-5" />,
-  [EventType.ROAD_BLOCKAGE]: <Construction className="h-5 w-5" />,
-  [EventType.HAZMAT]: <AlertTriangle className="h-5 w-5" />,
-  [EventType.FLOODING]: <CloudRain className="h-5 w-5" />,
-  [EventType.MASS_CASUALTY]: <Skull className="h-5 w-5" />,
-  [EventType.EVACUATION_NEEDED]: <Users className="h-5 w-5" />,
-};
-
-/** Force type icons for required forces display */
-const forceIcons: Record<string, React.ReactNode> = {
-  [ForceType.FIRE]: <Flame className="h-4 w-4" />,
-  [ForceType.MAGEN_DAVID]: <Heart className="h-4 w-4" />,
-  [ForceType.POLICE]: <Shield className="h-4 w-4" />,
-  [ForceType.RESCUE]: <HardHat className="h-4 w-4" />,
-  [ForceType.ENGINEERING]: <Wrench className="h-4 w-4" />,
-  [ForceType.WELFARE]: <HandHeart className="h-4 w-4" />,
-  [ForceType.INFRASTRUCTURE]: <Wrench className="h-4 w-4" />,
-  [ForceType.EVACUATION]: <Truck className="h-4 w-4" />,
-  [ForceType.HOMEFRONT]: <ShieldCheck className="h-4 w-4" />,
-};
-
-const forceNames: Record<string, string> = {
-  [ForceType.FIRE]: "כיבוי אש",
-  [ForceType.MAGEN_DAVID]: 'מד"א',
-  [ForceType.POLICE]: "משטרה",
-  [ForceType.RESCUE]: "חילוץ",
-  [ForceType.ENGINEERING]: "הנדסה",
-  [ForceType.WELFARE]: "רווחה",
-  [ForceType.INFRASTRUCTURE]: "תשתיות",
-  [ForceType.EVACUATION]: "פינוי",
-  [ForceType.HOMEFRONT]: "פיקוד העורף",
-};
+import { EventStatus } from "@/engine/types";
+import {
+  EventTypeIcon,
+  ForceTypeIcon,
+  eventTypeNames,
+  forceTypeNames,
+  forceTypeColors,
+  severityColors,
+} from "@/data/map-icons";
 
 export function EventDetail() {
   const selectedEventId = useUIStore((s) => s.selectedEventId);
@@ -118,10 +63,15 @@ export function EventDetail() {
       ? Math.max(0, event.escalationTimer - (tick - event.reportedAt))
       : 0;
 
+  // Treatment time calculations
+  const treatmentElapsed =
+    event.treatmentStartTick !== undefined
+      ? tick - event.treatmentStartTick
+      : 0;
+  const treatmentExpected = event.treatmentDurationTicks ?? 0;
+
   function handleDispatchClick() {
-    // Set the panel into "dispatch mode" — user clicks a unit
-    selectUnit(null); // reset any existing selection
-    // The unit panel will react to selectedEventId being set
+    selectUnit(null);
   }
 
   return (
@@ -134,9 +84,11 @@ export function EventDetail() {
         <div className="min-w-0 flex-1">
           {/* Title row */}
           <div className="mb-3 flex items-center gap-3">
-            <span className="text-orange-400">
-              {eventTypeIcons[event.type]}
-            </span>
+            <EventTypeIcon
+              type={event.type}
+              size={20}
+              color={severityColors[event.severity] ?? "#f97316"}
+            />
             <h3 className="text-lg font-semibold text-zinc-100">
               {eventTypeNames[event.type] ?? event.type}
             </h3>
@@ -211,8 +163,16 @@ export function EventDetail() {
                       : "bg-zinc-800 text-zinc-500",
                   )}
                 >
-                  {forceIcons[force]}
-                  <span>{forceNames[force] ?? force}</span>
+                  <ForceTypeIcon
+                    type={force}
+                    size={16}
+                    color={
+                      isAssigned
+                        ? "#4ade80"
+                        : (forceTypeColors[force] ?? "#71717a")
+                    }
+                  />
+                  <span>{forceTypeNames[force] ?? force}</span>
                   {isAssigned && <span className="ms-auto">&#10003;</span>}
                 </div>
               );
@@ -231,6 +191,21 @@ export function EventDetail() {
             size="md"
             label="התקדמות"
           />
+
+          {/* Treatment timeline */}
+          {treatmentElapsed > 0 && (
+            <div className="mt-2 flex items-center gap-3 text-xs text-zinc-400">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>זמן טיפול: {formatGameTime(treatmentElapsed)}</span>
+              </div>
+              {treatmentExpected > 0 && (
+                <div className="text-zinc-500">
+                  צפי: ~{formatGameTime(treatmentExpected)}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Escalation timer */}
           {escalationRemaining > 0 && event.status !== EventStatus.RESOLVED && (

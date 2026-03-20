@@ -1,47 +1,11 @@
 import { useState } from "react";
-import {
-  Flame,
-  Heart,
-  Shield,
-  HardHat,
-  Wrench,
-  HandHeart,
-  Truck,
-  Users,
-  ShieldCheck,
-  CircleDot,
-} from "lucide-react";
+import { Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useUIStore } from "@/store/ui-store";
 import { Badge } from "@/components/ui/Badge";
 import { ForceType, UnitStatus, type Unit } from "@/engine/types";
-
-/** Force type icons */
-const forceIcons: Record<string, React.ReactNode> = {
-  [ForceType.FIRE]: <Flame className="h-4 w-4" />,
-  [ForceType.MAGEN_DAVID]: <Heart className="h-4 w-4" />,
-  [ForceType.POLICE]: <Shield className="h-4 w-4" />,
-  [ForceType.RESCUE]: <HardHat className="h-4 w-4" />,
-  [ForceType.ENGINEERING]: <Wrench className="h-4 w-4" />,
-  [ForceType.WELFARE]: <HandHeart className="h-4 w-4" />,
-  [ForceType.INFRASTRUCTURE]: <Wrench className="h-4 w-4" />,
-  [ForceType.EVACUATION]: <Truck className="h-4 w-4" />,
-  [ForceType.HOMEFRONT]: <ShieldCheck className="h-4 w-4" />,
-};
-
-/** Force type colors */
-const forceColors: Record<string, string> = {
-  [ForceType.FIRE]: "text-red-400",
-  [ForceType.MAGEN_DAVID]: "text-red-300",
-  [ForceType.POLICE]: "text-blue-400",
-  [ForceType.RESCUE]: "text-orange-400",
-  [ForceType.ENGINEERING]: "text-yellow-400",
-  [ForceType.WELFARE]: "text-pink-400",
-  [ForceType.INFRASTRUCTURE]: "text-amber-400",
-  [ForceType.EVACUATION]: "text-green-400",
-  [ForceType.HOMEFRONT]: "text-cyan-400",
-};
+import { ForceTypeIcon, forceTypeColors } from "@/data/map-icons";
 
 /** Status badge mapping */
 const statusConfig: Record<
@@ -98,15 +62,12 @@ export function UnitsPanel() {
 
   function handleUnitClick(unit: Unit) {
     if (unit.status === UnitStatus.AVAILABLE) {
-      // If there's a selected event, dispatch directly
       if (selectedEventId) {
         dispatchUnit(unit.id, selectedEventId);
         return;
       }
-      // Toggle unit selection
       selectUnit(selectedUnitId === unit.id ? null : unit.id);
     } else {
-      // For non-available units, just show info
       selectUnit(selectedUnitId === unit.id ? null : unit.id);
     }
   }
@@ -180,15 +141,12 @@ export function UnitsPanel() {
               >
                 <div className="flex items-center gap-2">
                   {/* Force icon */}
-                  <span
-                    className={cn(
-                      "shrink-0",
-                      forceColors[unit.forceType] ?? "text-zinc-400",
-                    )}
-                  >
-                    {forceIcons[unit.forceType] ?? (
-                      <CircleDot className="h-4 w-4" />
-                    )}
+                  <span className="shrink-0">
+                    <ForceTypeIcon
+                      type={unit.forceType}
+                      size={16}
+                      color={forceTypeColors[unit.forceType] ?? "#71717a"}
+                    />
                   </span>
 
                   {/* Name */}

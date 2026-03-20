@@ -118,6 +118,10 @@ export interface GameEvent {
   missileExtension?: MissileEventExtension;
   resolveProgress: number;
   resolveRate: number;
+  /** Tick when first unit arrived on scene */
+  treatmentStartTick?: number;
+  /** Total ticks expected for resolution (calculated at spawn) */
+  treatmentDurationTicks?: number;
 }
 
 /** Definition for a chain event that may spawn from a parent */

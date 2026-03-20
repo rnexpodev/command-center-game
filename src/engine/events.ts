@@ -8,6 +8,7 @@ import {
 } from "./types";
 import { generateId } from "../lib/utils";
 import { escalateEvent } from "./escalation";
+import { calculateBaseDuration } from "../data/treatment-durations";
 
 type EventDef = Omit<
   GameEvent,
@@ -26,6 +27,11 @@ export function spawnEvent(state: GameState, eventDef: EventDef): GameState {
     assignedUnits: [],
     status: EventStatus.REPORTED,
     resolveProgress: 0,
+    treatmentDurationTicks: calculateBaseDuration(eventDef.type, {
+      threatRadius: eventDef.threatRadius,
+      casualties: eventDef.casualties,
+      severity: eventDef.severity,
+    }),
   };
   state.events.push(event);
   return state;
@@ -74,20 +80,20 @@ export function updateEvents(state: GameState): GameState {
         event.status = EventStatus.RESPONDING;
       }
 
-      // Calculate resolve rate based on units present
-      let effectiveRate = 0;
+      // Record when treatment started
+      if (event.treatmentStartTick === undefined) {
+        event.treatmentStartTick = state.tick;
+      }
+
+      // Calculate unit effectiveness multiplier
+      let unitMultiplier = 0;
       for (const unit of onSceneUnits) {
-        // Units matching required forces resolve faster
         const isMatchingForce = event.requiredForces.includes(unit.forceType);
         const specializationBonus = unit.specialization.includes(event.type)
           ? 1.5
           : 1.0;
         const matchBonus = isMatchingForce ? 1.0 : 0.3;
-        effectiveRate +=
-          event.resolveRate *
-          unit.effectiveness *
-          matchBonus *
-          specializationBonus;
+        unitMultiplier += unit.effectiveness * matchBonus * specializationBonus;
       }
 
       // Check if all required force types are present
@@ -99,12 +105,22 @@ export function updateEvents(state: GameState): GameState {
 
       // Bonus for having all required forces
       if (requiredTotal > 0 && requiredMet === requiredTotal) {
-        effectiveRate *= 1.5;
+        unitMultiplier *= 1.5;
+      }
+
+      // Duration-based progress (preferred) or fallback to resolveRate
+      let progressIncrement: number;
+      if (event.treatmentDurationTicks && event.treatmentDurationTicks > 0) {
+        const baseProgress = 100 / event.treatmentDurationTicks;
+        progressIncrement = baseProgress * unitMultiplier;
+      } else {
+        // Legacy fallback using resolveRate
+        progressIncrement = event.resolveRate * unitMultiplier;
       }
 
       event.resolveProgress = Math.min(
         100,
-        event.resolveProgress + effectiveRate,
+        event.resolveProgress + progressIncrement,
       );
 
       // Stabilized when progress > 50

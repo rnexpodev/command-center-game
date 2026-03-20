@@ -59,3 +59,25 @@ body {
 .animate-pulse-warning {
   animation: pulse-warning 2s ease-in-out infinite;
 }
+
+/* Clean marker pulse for unattended events */
+@keyframes marker-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); opacity: 0.85; }
+}
+.marker-pulse > div:first-child {
+  animation: marker-pulse 2s ease-in-out infinite;
+}
+
+/* Leaflet marker cleanup — remove default backgrounds */
+.custom-event-marker,
+.custom-unit-marker,
+.custom-base-marker {
+  background: none !important;
+  border: none !important;
+}
+
+/* Progress ring animation */
+.progress-ring-circle {
+  transition: stroke-dashoffset 1s ease-out;
+}
