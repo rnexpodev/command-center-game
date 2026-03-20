@@ -130,7 +130,7 @@ Based on Council guidance, we built the game with:
 - **Tech stack:** React + TypeScript + Vite + Leaflet + Zustand + Tailwind CSS (exactly as Council recommended)
 - **Architecture:** Engine/UI separation (as Council recommended)
 - **Forces:** Based on Council's Israeli emergency forces list
-- **Scenarios:** 4 pre-built scenarios (tutorial, dual emergency, complex collapse, surge)
+- **Scenarios:** 4 base scenarios + 10 missile strike scenarios (14 total)
 
 ### What Was Built
 
@@ -160,7 +160,8 @@ Based on Council guidance, we built the game with:
 | Studio Persona/Stories/Pages/Design | 0/10 | All non-functional with local model |
 | Studio Data Model Suggestions | 0/10 | Non-functional |
 | PRD Export | 1/10 | Creates empty shell, Hebrew encoding broken |
-| Prompt Generation | N/A | Not tested (PRD prerequisite failed) |
+| Prompt Generation (Prompt Workshop) | 3/10 | Rule-based output is generic; LLM enhancement failed; saved to library OK |
+| Council for Missile Scenarios | 9/10 | Extremely detailed Israeli emergency knowledge — siren sequence, Iron Dome, damage patterns |
 | Overall Beginner Experience | 4/10 | Council is excellent, but Studio is useless without a capable model |
 
 ### Key Findings
