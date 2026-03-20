@@ -7,11 +7,13 @@ import {
   Radio,
   Users,
   AlertTriangle,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatGameTime } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useUIStore } from "@/store/ui-store";
+import { useTourStore } from "@/store/tour-store";
 import {
   Badge,
   severityToVariant,
@@ -39,6 +41,7 @@ export function TopBar() {
   const setSpeed = useGameStore((s) => s.setSpeed);
   const reset = useGameStore((s) => s.reset);
   const setScreen = useUIStore((s) => s.setScreen);
+  const startTour = useTourStore((s) => s.startTour);
 
   const activeEvents = events.filter(
     (e) => e.status !== EventStatus.RESOLVED,
@@ -88,7 +91,7 @@ export function TopBar() {
 
       {/* Center: clock */}
       <div className="flex items-center gap-6">
-        <div className="text-center">
+        <div className="text-center" data-tour="clock">
           <div className="font-mono text-3xl font-bold tracking-widest text-zinc-100">
             {formatGameTime(tick)}
           </div>
@@ -98,7 +101,7 @@ export function TopBar() {
       {/* Left side: stats + speed controls */}
       <div className="flex items-center gap-4">
         {/* Stats */}
-        <div className="flex items-center gap-4 text-sm">
+        <div className="flex items-center gap-4 text-sm" data-tour="status-bar">
           <div className="flex items-center gap-1.5 text-zinc-400">
             <AlertTriangle className="h-4 w-4 text-orange-400" />
             <span>{activeEvents}</span>
@@ -114,7 +117,7 @@ export function TopBar() {
         <div className="h-6 w-px bg-zinc-700" />
 
         {/* Speed controls */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" data-tour="speed-controls">
           <IconButton
             variant="ghost"
             size="sm"
@@ -152,6 +155,19 @@ export function TopBar() {
             <ChevronsRight className="h-4 w-4" />
           </IconButton>
         </div>
+
+        <div className="h-6 w-px bg-zinc-700" />
+
+        {/* Help / restart tour */}
+        <IconButton
+          variant="ghost"
+          size="sm"
+          onClick={startTour}
+          title="סיור מודרך"
+          label="עזרה"
+        >
+          <HelpCircle className="h-4 w-4" />
+        </IconButton>
       </div>
     </header>
   );

@@ -112,7 +112,10 @@ export function EventsPanel() {
     event.status === EventStatus.REPORTED && event.assignedUnits.length === 0;
 
   return (
-    <div className="flex h-full flex-col border-s border-zinc-800 bg-zinc-900/80">
+    <div
+      className="flex h-full flex-col border-s border-zinc-800 bg-zinc-900/80"
+      data-tour="events-panel"
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
         <div className="flex items-center gap-2">

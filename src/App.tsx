@@ -2,6 +2,7 @@ import { useUIStore } from "@/store/ui-store";
 import { ScenarioSelect } from "@/components/scenarios/ScenarioSelect";
 import { CommandCenter } from "@/components/command-center/CommandCenter";
 import { PostGameReport } from "@/components/post-game/PostGameReport";
+import { TutorialPage } from "@/components/tutorial/TutorialPage";
 
 function App() {
   const screen = useUIStore((s) => s.screen);
@@ -13,6 +14,7 @@ function App() {
       {screen === "menu" && <ScenarioSelect />}
       {screen === "game" && <CommandCenter />}
       {screen === "report" && <PostGameReport />}
+      {screen === "tutorial" && <TutorialPage />}
     </div>
   );
 }

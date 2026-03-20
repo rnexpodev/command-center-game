@@ -1,4 +1,4 @@
-import { Shield, AlertTriangle, Flame, Zap } from "lucide-react";
+import { Shield, AlertTriangle, Flame, Zap, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Badge,
@@ -44,7 +44,20 @@ export function ScenarioSelect() {
         <h1 className="mb-3 text-4xl font-bold tracking-tight text-zinc-100">
           חמ&quot;ל עירוני — סימולטור ניהול חירום
         </h1>
-        <p className="text-lg text-zinc-400">בחר תרחיש</p>
+        <div className="flex items-center justify-center gap-4">
+          <p className="text-lg text-zinc-400">בחר תרחיש</p>
+          <button
+            onClick={() => setScreen("tutorial")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border border-blue-500/40",
+              "bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-400",
+              "transition-all hover:bg-blue-500/20 hover:border-blue-400",
+            )}
+          >
+            <BookOpen className="h-4 w-4" />
+            איך משחקים?
+          </button>
+        </div>
       </div>
 
       {/* Scenario grid */}

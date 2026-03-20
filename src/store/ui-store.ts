@@ -19,7 +19,7 @@ interface UIState {
   activePanel: ActivePanel;
   notifications: GameNotification[];
   showPostGame: boolean;
-  screen: "menu" | "game" | "report";
+  screen: "menu" | "game" | "report" | "tutorial";
 }
 
 /** UI actions */
@@ -31,7 +31,7 @@ interface UIActions {
   dismissNotification: (id: string) => void;
   clearNotifications: () => void;
   setShowPostGame: (show: boolean) => void;
-  setScreen: (screen: "menu" | "game" | "report") => void;
+  setScreen: (screen: "menu" | "game" | "report" | "tutorial") => void;
   reset: () => void;
 }
 
@@ -101,7 +101,7 @@ export const useUIStore = create<UIStore>((set) => ({
     set({ showPostGame: show });
   },
 
-  setScreen(screen: "menu" | "game" | "report") {
+  setScreen(screen: "menu" | "game" | "report" | "tutorial") {
     set({
       screen,
       selectedEventId: null,

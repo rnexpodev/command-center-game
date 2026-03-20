@@ -112,7 +112,10 @@ export function UnitsPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col border-e border-zinc-800 bg-zinc-900/80">
+    <div
+      className="flex h-full flex-col border-e border-zinc-800 bg-zinc-900/80"
+      data-tour="units-panel"
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
         <div className="flex items-center gap-2">

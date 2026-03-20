@@ -123,7 +123,7 @@ export function CityMap() {
   }
 
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full" data-tour="city-map">
       <MapContainer
         center={BEER_SHEVA_CENTER}
         zoom={13}

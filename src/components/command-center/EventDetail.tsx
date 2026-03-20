@@ -125,7 +125,10 @@ export function EventDetail() {
   }
 
   return (
-    <div className="border-t border-zinc-800 bg-zinc-900/95 backdrop-blur-sm">
+    <div
+      className="border-t border-zinc-800 bg-zinc-900/95 backdrop-blur-sm"
+      data-tour="event-detail"
+    >
       <div className="flex items-start gap-6 px-6 py-4">
         {/* Event info */}
         <div className="min-w-0 flex-1">
