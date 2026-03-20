@@ -7,7 +7,9 @@ function App() {
   const screen = useUIStore((s) => s.screen);
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-zinc-950 text-zinc-100">
+    <div
+      className={`w-screen bg-zinc-950 text-zinc-100 ${screen === "game" ? "h-screen overflow-hidden" : "min-h-screen overflow-y-auto"}`}
+    >
       {screen === "menu" && <ScenarioSelect />}
       {screen === "game" && <CommandCenter />}
       {screen === "report" && <PostGameReport />}

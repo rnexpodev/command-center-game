@@ -38,7 +38,7 @@ export function ScenarioSelect() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-950 px-4">
+    <div className="flex min-h-screen flex-col items-center bg-zinc-950 px-4 py-12 overflow-y-auto">
       {/* Header */}
       <div className="mb-12 text-center">
         <h1 className="mb-3 text-4xl font-bold tracking-tight text-zinc-100">
