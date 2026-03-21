@@ -223,6 +223,16 @@ export interface ScoreMetrics {
   grade: "S" | "A" | "B" | "C" | "D" | "F";
 }
 
+/** Civilian population state tracked per tick */
+export interface CivilianState {
+  /** City-wide panic level (0–100) */
+  panicLevel: number;
+  /** Number of civilians currently in event threat zones */
+  populationAtRisk: number;
+  /** Number of civilians who reached shelters */
+  evacuated: number;
+}
+
 /** Full game state */
 export interface GameState {
   tick: number;
@@ -239,4 +249,5 @@ export interface GameState {
   weather: Weather;
   timeOfDay: TimeOfDay;
   trainingMode: boolean;
+  civilianState: CivilianState;
 }

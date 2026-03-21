@@ -56,8 +56,9 @@ Pure functions that mutate `GameState` directly (no immutability — performance
 - **`scoring.ts`** — Score calculation across 4 categories (response time, stabilization, resource efficiency, casualty prevention). 0–1000 scale, S/A/B/C/D/F grades.
 - **`recorder.ts`** — Singleton `GameRecorder` that records `TimelineEntry` items during gameplay (event spawned/resolved/escalated, unit dispatched/arrived, chain events). Used by the after-action replay in the post-game report.
 - **`analytics.ts`** — Pure analytics computation from recorder timeline. `computeAnalytics()` returns response times per event, force utilization, event-type counts, escalation/chain counts, resolution rate, peak concurrent events, and time to first response.
-- **`training.ts`** — Training mode utilities: manual event injection, extra unit spawning, event clearing.
+- **`training.ts`** — Training mode engine: manual event injection (`createManualEvent`), extra unit spawning (`addExtraUnits`), event clearing (`clearEvents`), and 4 predefined `TrainingObjective` checks (zero escalations, fast response, full utilization, zero casualties).
 - **`achievements.ts`** — Pure achievement condition checker. `checkAchievements(stats, gameResult)` returns newly earned achievement IDs.
+- **`civilians.ts`** — Civilian behavior simulation: `updateCivilianState()` called each tick calculates population-at-risk (neighborhoods overlapping event threat zones), panic level (rises with critical/high events, decays when calm), and evacuation progress (evacuation units on scene move civilians to safety).
 - **`result-builder.ts`** — Extracts a `GameResult` snapshot from completed `GameState` for career tracking.
 
 ### State (`src/store/`)
@@ -79,11 +80,12 @@ Static game content — all data is defined here, not fetched:
 - **`treatment-durations.ts`** — Per-event-type treatment duration tables with context-based scaling (threat radius, casualties, severity).
 - **`scenarios/`** — 14 scenario definitions (4 classic + 10 missile-focused) with timed event waves.
 - **`achievements.ts`** — 18 achievement definitions across 4 categories (performance, speed, mastery, milestone) with Hebrew names and condition types.
+- **`population.ts`** — Per-neighborhood population counts (keyed by neighborhood ID), total city population constant, and 8 public shelter definitions with coordinates and capacity.
 
 ### UI (`src/components/`)
 
 Five screens driven by `ui-store.screen`:
-- **`command-center/`** — Main game screen: TopBar (clock/stats), EventsPanel (right), CityMap (center, Leaflet), UnitsPanel (left), EventDetail (bottom).
+- **`command-center/`** — Main game screen: TopBar (clock/stats/panic meter), EventsPanel (right), CityMap (center, Leaflet), UnitsPanel (left), EventDetail (bottom). PanicMeter shows population-at-risk, evacuated count, and panic level with color-coded LED indicators.
 - **`scenarios/`** — Scenario selection menu.
 - **`post-game/`** — Results screen with three tabs: score summary, performance analytics (response times, force utilization, events by type, key metrics), and after-action replay timeline. Replay includes playback controls, tick scrubber, speed adjustment, and filterable event list.
 - **`tutorial/`** — Animated onboarding with mission briefs and replay.
@@ -110,6 +112,7 @@ Five screens driven by `ui-store.screen`:
 - **Base buildings** — 4 static base markers (fire station, police, hospital, municipal) show unit home locations on the map.
 - **Treatment durations** — Duration-based resolution replaces flat `resolveRate`. Each event type has base/min/max tick durations scaled by threat radius, casualties, and severity. `GameEvent.treatmentStartTick` and `treatmentDurationTicks` track treatment timeline.
 - **Game recorder** — Singleton `gameRecorder` in `src/engine/recorder.ts` automatically records timeline entries during simulation. Reset on scenario start. Accessed by the post-game replay via `gameRecorder` export from `game-store.ts`.
+- **Civilian state** — `GameState.civilianState` tracks city-wide panic (0–100), population at risk (civilians in event threat zones), and evacuated count. Updated each tick by `civilians.ts`. Panic rises with critical/high events, decays when calm. Population at risk uses neighborhood proximity to active events.
 
 ## Domain Concepts
 

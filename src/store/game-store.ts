@@ -40,6 +40,7 @@ function snapshotState(prev: GameState): GameState {
     weather: prev.weather,
     timeOfDay: prev.timeOfDay,
     trainingMode: prev.trainingMode,
+    civilianState: { ...prev.civilianState },
   };
 }
 
@@ -145,6 +146,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         weather: state.weather,
         timeOfDay: state.timeOfDay,
         trainingMode: state.trainingMode,
+        civilianState: state.civilianState,
       };
     });
   },

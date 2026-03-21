@@ -13,6 +13,7 @@ import { updateUnits } from "./units";
 import { calculateFinalScore, updateScore } from "./scoring";
 import { gameRecorder } from "./recorder";
 import { advanceTimeOfDay } from "./weather";
+import { updateCivilianState } from "./civilians";
 
 /** Create a fresh initial game state */
 export function createSimulation(): GameState {
@@ -40,6 +41,7 @@ export function createSimulation(): GameState {
     weather: Weather.CLEAR,
     timeOfDay: TimeOfDay.DAY,
     trainingMode: false,
+    civilianState: { panicLevel: 0, populationAtRisk: 0, evacuated: 0 },
   };
 }
 
@@ -50,8 +52,9 @@ export function createSimulation(): GameState {
  * 2. Check scenario waves (spawn new events at scheduled times)
  * 3. Update events (escalation, resolution)
  * 4. Update units (movement, arrival)
- * 5. Update score
- * 6. Check win/lose conditions
+ * 5. Update civilian state (panic, population at risk)
+ * 6. Update score
+ * 7. Check win/lose conditions
  */
 export function tickSimulation(state: GameState): GameState {
   if (!state.isRunning || state.isComplete) return state;
@@ -80,10 +83,13 @@ export function tickSimulation(state: GameState): GameState {
   // 4. Update units
   updateUnits(state);
 
-  // 5. Update score
+  // 5. Update civilian state (panic, population at risk)
+  updateCivilianState(state);
+
+  // 6. Update score
   updateScore(state);
 
-  // 6. Check win/lose conditions
+  // 7. Check win/lose conditions
   checkEndConditions(state);
 
   return state;

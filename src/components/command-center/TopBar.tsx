@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/Badge";
 import { IconButton } from "@/components/ui/IconButton";
 import { WeatherIndicator } from "./WeatherIndicator";
+import { PanicMeter } from "./PanicMeter";
 import { GameSpeed, EventStatus, UnitStatus } from "@/engine/types";
 
 const alertLevelColor: Record<number, string> = {
@@ -122,6 +123,11 @@ export function TopBar() {
             <span className="text-zinc-500">זמינים</span>
           </div>
         </div>
+
+        <div className="h-6 w-px bg-zinc-700" />
+
+        {/* Civilian panic & population */}
+        <PanicMeter />
 
         <div className="h-6 w-px bg-zinc-700" />
 
