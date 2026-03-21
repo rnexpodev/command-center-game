@@ -1,12 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  Trophy,
-  RotateCcw,
-  Home,
-  Film,
-  BarChart3,
-  Activity,
-} from "lucide-react";
+import { Trophy, Film, BarChart3, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useUIStore } from "@/store/ui-store";
@@ -15,11 +8,18 @@ import { useCampaignStore } from "@/store/campaign-store";
 import { SummaryView } from "./summary-view";
 import { ReplayView } from "./ReplayView";
 import { AnalyticsView } from "./AnalyticsView";
+import { ReportActions } from "./ReportActions";
 import { CampaignResultOverlay } from "../campaign/CampaignResultOverlay";
 import { buildGameResult } from "@/engine/result-builder";
 import { ALL_SCENARIOS } from "@/data/scenarios";
 
 type Tab = "summary" | "replay" | "analytics";
+
+const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
+  { id: "summary", label: "סיכום", icon: BarChart3 },
+  { id: "analytics", label: "ניתוח", icon: Activity },
+  { id: "replay", label: "הקלטה", icon: Film },
+];
 
 export function PostGameReport() {
   const [activeTab, setActiveTab] = useState<Tab>("summary");
@@ -30,7 +30,6 @@ export function PostGameReport() {
   const recordGameResult = useCareerStore((s) => s.recordGameResult);
   const hasRecorded = useRef(false);
 
-  // Campaign state
   const activeCampaignId = useCampaignStore((s) => s.activeCampaignId);
   const getCurrentScenario = useCampaignStore((s) => s.getCurrentScenario);
   const getActiveCampaign = useCampaignStore((s) => s.getActiveCampaign);
@@ -41,7 +40,6 @@ export function PostGameReport() {
   const campaignScenario = activeCampaignId ? getCurrentScenario() : null;
   const campaign = activeCampaignId ? getActiveCampaign() : null;
 
-  // Record career + campaign stats once when report screen mounts
   useEffect(() => {
     if (hasRecorded.current) return;
     hasRecorded.current = true;
@@ -59,17 +57,11 @@ export function PostGameReport() {
   }, [recordGameResult, campaignScenario, recordCampaignResult]);
 
   function handlePlayAgain() {
-    if (activeScenario) {
-      const scenario = activeScenario;
-      reset();
-      useGameStore.getState().startScenario(scenario);
-      setScreen("game");
-    }
-  }
-
-  function handleBackToMenu() {
+    if (!activeScenario) return;
+    const scenario = activeScenario;
     reset();
-    setScreen("menu");
+    useGameStore.getState().startScenario(scenario);
+    setScreen("game");
   }
 
   function handleCampaignContinue() {
@@ -89,15 +81,8 @@ export function PostGameReport() {
     setScreen("game");
   }
 
-  const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
-    { id: "summary", label: "סיכום", icon: BarChart3 },
-    { id: "analytics", label: "ניתוח", icon: Activity },
-    { id: "replay", label: "הקלטה", icon: Film },
-  ];
-
   return (
     <div className="flex min-h-screen flex-col items-center bg-zinc-950 px-4 py-8">
-      {/* Title */}
       <div className="mb-6 text-center">
         <Trophy className="mx-auto mb-4 h-10 w-10 text-yellow-400" />
         <h1 className="mb-2 text-3xl font-bold text-zinc-100">סיכום משימה</h1>
@@ -106,7 +91,6 @@ export function PostGameReport() {
         )}
       </div>
 
-      {/* Tab bar */}
       <div className="mb-8 flex gap-1 rounded-xl border border-zinc-800 bg-zinc-900/60 p-1">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -128,15 +112,13 @@ export function PostGameReport() {
         })}
       </div>
 
-      {/* Tab content */}
       <div className="mb-10 w-full flex justify-center">
         {activeTab === "summary" && <SummaryView />}
         {activeTab === "analytics" && <AnalyticsView />}
         {activeTab === "replay" && <ReplayView />}
       </div>
 
-      {/* Campaign result overlay */}
-      {campaignScenario && campaign && (
+      {campaignScenario && campaign ? (
         <div className="mb-8">
           <CampaignResultOverlay
             scenario={campaignScenario}
@@ -149,34 +131,14 @@ export function PostGameReport() {
             onRetry={handleCampaignRetry}
           />
         </div>
-      )}
-
-      {/* Standard action buttons (non-campaign) */}
-      {!campaignScenario && (
-        <div className="flex gap-4">
-          <button
-            onClick={handlePlayAgain}
-            className={cn(
-              "flex items-center gap-2 rounded-xl border border-blue-500/40 bg-blue-500/20 px-6 py-3",
-              "text-sm font-semibold text-blue-300 transition-colors",
-              "hover:bg-blue-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-            )}
-          >
-            <RotateCcw className="h-4 w-4" />
-            שחק שוב
-          </button>
-          <button
-            onClick={handleBackToMenu}
-            className={cn(
-              "flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-6 py-3",
-              "text-sm font-semibold text-zinc-300 transition-colors",
-              "hover:bg-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500",
-            )}
-          >
-            <Home className="h-4 w-4" />
-            חזרה לתפריט
-          </button>
-        </div>
+      ) : (
+        <ReportActions
+          onPlayAgain={handlePlayAgain}
+          onBackToMenu={() => {
+            reset();
+            setScreen("menu");
+          }}
+        />
       )}
     </div>
   );

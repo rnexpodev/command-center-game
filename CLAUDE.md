@@ -51,7 +51,8 @@ Pure functions that mutate `GameState` directly (no immutability — performance
 - **`simulation.ts`** — Main game loop: `createSimulation()`, `startScenario()`, `tickSimulation()`. Each tick spawns events, updates escalation, moves units, recalculates score, checks win/lose.
 - **`clock.ts`** — `requestAnimationFrame`-based clock. Controls game speed (Paused/1x/2x/4x).
 - **`events.ts`** — Event spawning from scenario waves, escalation timer detection, chain event generation. Duration-based resolution using `treatmentDurationTicks` from treatment-durations data.
-- **`units.ts`** — Unit dispatch, movement calculation (distance-based travel time), arrival handling.
+- **`units.ts`** — Unit dispatch, movement calculation (distance-based travel time with weather speed modifier), arrival handling.
+- **`weather.ts`** — Weather & time-of-day engine: `getSpeedModifier()` returns travel speed multiplier (rain=0.8, sandstorm=0.5, night=0.85), `getEventSpawnModifier()` boosts spawn probability by weather/event-type, `advanceTimeOfDay()` cycles dawn/day/dusk/night every 150 ticks.
 - **`escalation.ts`** — Rules for when untreated events worsen (severity increase, casualty growth, chain spawning).
 - **`scoring.ts`** — Score calculation across 4 categories (response time, stabilization, resource efficiency, casualty prevention). 0–1000 scale, S/A/B/C/D/F grades.
 - **`recorder.ts`** — Singleton `GameRecorder` that records `TimelineEntry` items during gameplay (event spawned/resolved/escalated, unit dispatched/arrived, chain events). Used by the after-action replay in the post-game report.
@@ -63,11 +64,12 @@ Pure functions that mutate `GameState` directly (no immutability — performance
 
 ### State (`src/store/`)
 
-Four Zustand stores:
+Five Zustand stores:
 - **`game-store.ts`** — Full `GameState` + actions. Engine functions receive state snapshots, mutate them, and the store replaces its state. The clock lives outside the store (not serializable).
-- **`ui-store.ts`** — UI-only state: selected event/unit IDs, screen routing (`menu` | `game` | `report` | `tutorial` | `career`), notification queue.
+- **`ui-store.ts`** — UI-only state: selected event/unit IDs, screen routing (`menu` | `game` | `report` | `tutorial` | `career` | `editor`), notification queue.
 - **`tour-store.ts`** — Guided tour progress, persisted to localStorage.
 - **`career-store.ts`** — Persistent career stats and achievements, persisted to localStorage. Tracks cumulative events resolved, scenarios played, best grades/scores, and unlocked achievements.
+- **`editor-store.ts`** — Scenario editor state: waves, events, scenario metadata. Supports save/load to localStorage, JSON export/import. `buildScenario()` converts editor state to a real `Scenario` object for the game engine.
 
 ### Data (`src/data/`)
 
@@ -84,7 +86,7 @@ Static game content — all data is defined here, not fetched:
 
 ### UI (`src/components/`)
 
-Five screens driven by `ui-store.screen`:
+Six screens driven by `ui-store.screen`:
 - **`command-center/`** — Main game screen: TopBar (clock/stats/panic meter), EventsPanel (right), CityMap (center, Leaflet), UnitsPanel (left), EventDetail (bottom). PanicMeter shows population-at-risk, evacuated count, and panic level with color-coded LED indicators.
 - **`scenarios/`** — Scenario selection menu.
 - **`post-game/`** — Results screen with three tabs: score summary, performance analytics (response times, force utilization, events by type, key metrics), and after-action replay timeline. Replay includes playback controls, tick scrubber, speed adjustment, and filterable event list.
@@ -93,6 +95,7 @@ Five screens driven by `ui-store.screen`:
 - **`career/`** — Career dashboard screen: stats summary, achievement grid (locked/unlocked), best grades table per scenario.
 - **`achievements/`** — Achievement popup toast (animated, gold accent, auto-dismiss) and icon mapper.
 - **`training/`** — Training mode instructor panel: collapsible side panel with event injector (type/severity picker + map click placement), live objectives tracker, and quick actions (add units, clear events). Visible only when `trainingMode` is true.
+- **`editor/`** — Scenario editor screen: 3-column layout with wave list (right in RTL), mini Leaflet map with click-to-place events (center), and event details panel (left in RTL). Top bar has scenario name/difficulty/save/export/import. Bottom bar has play and cancel. Supports save/load from localStorage and JSON import/export.
 - **`ui/`** — Shared primitives (Badge, IconButton, ProgressBar).
 
 ### Utilities (`src/lib/utils.ts`)
@@ -115,6 +118,7 @@ Five screens driven by `ui-store.screen`:
 - **Game recorder** — Singleton `gameRecorder` in `src/engine/recorder.ts` automatically records timeline entries during simulation. Reset on scenario start. Accessed by the post-game replay via `gameRecorder` export from `game-store.ts`.
 - **Civilian state** — `GameState.civilianState` tracks city-wide panic (0–100), population at risk (civilians in event threat zones), and evacuated count. Updated each tick by `civilians.ts`. Panic rises with critical/high events, decays when calm. Population at risk uses neighborhood proximity to active events.
 - **Training mode** — `GameState.trainingMode` flag toggled on the scenario selection screen. When active, the InstructorPanel appears in the command center layout. Instructors can inject events (dropdown + map click), track 4 predefined objectives live, add extra units, and clear all events. Map click injection uses a shared pending-injection state between the EventInjector component and a `useMapEvents` hook in CityMap.
+- **Weather & time of day** — `GameState.weather` (clear/rain/sandstorm/heatwave) and `GameState.timeOfDay` (dawn/day/dusk/night) affect gameplay. Weather slows unit travel (rain 0.8x, sandstorm 0.5x) and boosts certain event spawns. Time advances every 150 ticks. Scenarios can set `weather` and `startTimeOfDay`. TopBar shows weather/time indicators via `WeatherIndicator` component. Map has CSS overlay tints (blue for rain, amber for sandstorm, dark for night, orange for dawn/dusk).
 
 ## Domain Concepts
 
