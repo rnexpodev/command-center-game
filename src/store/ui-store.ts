@@ -20,6 +20,8 @@ interface UIState {
   notifications: GameNotification[];
   showPostGame: boolean;
   screen: "menu" | "game" | "report" | "tutorial";
+  soundEnabled: boolean;
+  soundVolume: number;
 }
 
 /** UI actions */
@@ -32,6 +34,8 @@ interface UIActions {
   clearNotifications: () => void;
   setShowPostGame: (show: boolean) => void;
   setScreen: (screen: "menu" | "game" | "report" | "tutorial") => void;
+  setSoundEnabled: (enabled: boolean) => void;
+  setSoundVolume: (volume: number) => void;
   reset: () => void;
 }
 
@@ -47,6 +51,8 @@ export const useUIStore = create<UIStore>((set) => ({
   notifications: [],
   showPostGame: false,
   screen: "menu",
+  soundEnabled: JSON.parse(localStorage.getItem("soundEnabled") ?? "true"),
+  soundVolume: JSON.parse(localStorage.getItem("soundVolume") ?? "0.5"),
 
   // --- Actions ---
 
@@ -107,6 +113,16 @@ export const useUIStore = create<UIStore>((set) => ({
       selectedEventId: null,
       selectedUnitId: null,
     });
+  },
+
+  setSoundEnabled(enabled: boolean) {
+    localStorage.setItem("soundEnabled", JSON.stringify(enabled));
+    set({ soundEnabled: enabled });
+  },
+
+  setSoundVolume(volume: number) {
+    localStorage.setItem("soundVolume", JSON.stringify(volume));
+    set({ soundVolume: volume });
   },
 
   reset() {

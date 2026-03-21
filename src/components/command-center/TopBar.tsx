@@ -8,6 +8,8 @@ import {
   Users,
   AlertTriangle,
   HelpCircle,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatGameTime } from "@/lib/utils";
@@ -42,6 +44,8 @@ export function TopBar() {
   const reset = useGameStore((s) => s.reset);
   const setScreen = useUIStore((s) => s.setScreen);
   const startTour = useTourStore((s) => s.startTour);
+  const soundEnabled = useUIStore((s) => s.soundEnabled);
+  const setSoundEnabled = useUIStore((s) => s.setSoundEnabled);
 
   const activeEvents = events.filter(
     (e) => e.status !== EventStatus.RESOLVED,
@@ -157,6 +161,20 @@ export function TopBar() {
         </div>
 
         <div className="h-6 w-px bg-zinc-700" />
+
+        {/* Sound toggle */}
+        <IconButton
+          variant="ghost"
+          size="sm"
+          onClick={() => setSoundEnabled(!soundEnabled)}
+          title={soundEnabled ? "השתק" : "הפעל צלילים"}
+        >
+          {soundEnabled ? (
+            <Volume2 className="h-4 w-4" />
+          ) : (
+            <VolumeX className="h-4 w-4 text-zinc-500" />
+          )}
+        </IconButton>
 
         {/* Help / restart tour */}
         <IconButton

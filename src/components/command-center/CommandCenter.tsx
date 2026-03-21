@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useGameStore } from "@/store/game-store";
 import { useUIStore } from "@/store/ui-store";
 import { useTourStore } from "@/store/tour-store";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { TopBar } from "./TopBar";
 import { EventsPanel } from "./EventsPanel";
 import { UnitsPanel } from "./UnitsPanel";
@@ -16,6 +17,9 @@ export function CommandCenter() {
   const selectedEventId = useUIStore((s) => s.selectedEventId);
   const hasSeenTour = useTourStore((s) => s.hasSeenTour);
   const startTour = useTourStore((s) => s.startTour);
+
+  // Sound effects — reacts to game state changes
+  useSoundEffects();
 
   // Navigate to report when scenario completes
   useEffect(() => {
