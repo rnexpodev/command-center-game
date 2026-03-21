@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Urban Command Center simulation game — a Hebrew RTL emergency management simulator set in Beer Sheva, Israel. The player manages city-wide emergency events by dispatching units, prioritizing incidents, and preventing escalation. Built with React + TypeScript + Vite (not Next.js).
 
+**Genre:** Emergency Dispatch Simulation / Real-Time Tactical Strategy / Serious Game
+**Categories:** Emergency Dispatch Simulation, Real-Time Tactical Strategy, City Crisis Management, Serious Game/Training Simulator, Israeli Civilian Defense Simulation
+**Competitors:** 911 Operator, 112 Operator, EMERGENCY series, Frostpunk, Command: Modern Operations
+**Unique niche:** First Hebrew-language emergency command simulation set in a real Israeli city with missile attack scenarios.
+**Dual purpose:** Also serves as a visual prototype for the real municipal command center software at `C:\devprojects\municipal-command-center`.
+
 ## Commands
 
 ```bash
@@ -102,3 +108,22 @@ Four screens driven by `ui-store.screen`:
 - **Force Matching** — Each event type requires specific force types. Score rewards correct matching, not just fast dispatch.
 - **Scenario Waves** — Scenarios define timed waves of events. Events spawn at specific ticks during the simulation.
 - **Fog of War** — Missile events have initial uncertainty; details reveal progressively.
+
+## Documentation
+
+- **`docs/GAME-IDENTITY.md`** — Game categories, competitive positioning, unique value propositions
+- **`docs/COMPETITIVE-ANALYSIS.md`** — 15+ competitor game analyses across 4 tiers with actionable conclusions
+- **`docs/plans/`** — Improvement plans directory: `pending/` (12 plans) and `executed/` (completed)
+- **`docs/process/CORTEX-DEVELOPMENT-TRACE.md`** — Cortex usage timeline and issues
+- **`docs/process/DECISION-LOG.md`** — All architectural and product decisions with reasoning
+- **`docs/cortex-evaluation.md`** — Cortex feature ratings from initial build
+- **`docs/cortex-improvements.md`** — Cortex improvement suggestions from field use
+- **`docs/info.md`** — Original Hebrew product specification
+
+## Cortex Integration
+
+Project is registered in Cortex Studio (ID: `e0edbd05-c909-4b5d-a2b4-addc5ffb70d1`). Cortex at `C:\devprojects\cortex` provides:
+- **Council** for architectural and product decisions
+- **Project Studio** for feature tracking
+- **Error tracking** for issue discovery
+- **Session ingestion** for development history

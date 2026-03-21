@@ -195,3 +195,71 @@ Based on Council guidance, we built the game with:
 **Cortex Studio is currently unusable** for actual product development. Every AI-powered suggestion returned null or irrelevant content. The feature is architecturally sound (the API routes, JSON schema, suggestion types are well-designed) but the AI integration doesn't produce useful output with the available local model.
 
 **Recommendation:** Focus on making Studio work with remote API models (Anthropic, OpenAI) as a priority. The Studio suggestion types (features, personas, data models, pages, design direction) are the right abstractions — they just need a model that can generate structured output reliably.
+
+---
+
+## Session 2: 2026-03-22 — Competitive Analysis & Planning
+
+### Context
+Used Cortex for project registration and Council validation during a competitive analysis and improvement planning session.
+
+### 2.1 Project Registration via API
+
+**Action:** `POST /api/studio` with project name, idea text, features array, tech stack
+**Result:** Project created successfully (ID: e0edbd05-c909-4b5d-a2b4-addc5ffb70d1)
+
+**Issues:**
+- No field to link project to local git repo path. Auto-linking via session path substring is the only option.
+- Features array accepted well — 11 features registered with descriptions.
+
+**Rating: 7/10** — API works, but lacks explicit repo linking.
+
+---
+
+### 2.2 Council Query for Categorization Validation
+
+**Query:** "Validate this game categorization: Emergency Dispatch Simulation, Real-Time Tactical Strategy, City Crisis Management, Serious Game/Training Simulator, Israeli Civilian Defense."
+**Query ID:** 76b0fd78-0784-4a82-ad8a-04a4d61e363e
+**Status:** Submitted, processing
+
+**Issues:**
+- `localhost:3141` didn't resolve — had to use `127.0.0.1:3141` explicitly
+- Server had port binding conflict from a previous instance
+- Council processing time ~60-90 seconds as previously documented
+
+**Rating: 6/10** — Query submitted successfully but connectivity issues and slow processing remain.
+
+---
+
+### 2.3 Cortex as Development Workflow Hub
+
+**What worked in this session:**
+- API health check confirmed service status
+- Studio project creation via REST API
+- Council query submission and tracking via query ID
+- Previous evaluation docs (this file + cortex-improvements.md) provided valuable context
+
+**What didn't work / wasn't used:**
+- Studio AI suggestions (not attempted — known broken with local Llama model)
+- PRD Workshop (not attempted — known to create empty documents)
+- Prompts Lab (not needed for this planning session)
+- MCP Server (not connected to this Claude Code session)
+
+**Rating: 5/10** — Cortex added value through Council and project registration, but most features were bypassed due to known limitations.
+
+---
+
+### Session 2 Evaluation Summary
+
+| Feature | Rating | Notes |
+|---------|--------|-------|
+| API Health Check | 8/10 | Works, but localhost vs 127.0.0.1 issue |
+| Project Studio Registration | 7/10 | API works well, missing repo path linking |
+| Council Query Submission | 6/10 | Submitted successfully, slow processing |
+| Overall Session Value | 5/10 | Added structure but most intelligence came from external research |
+
+### New Improvement Suggestions
+1. **Bind API to both localhost and 127.0.0.1** — or document which to use
+2. **Add explicit repo path field to Studio projects** — for direct linking without auto-detection
+3. **Council "quick mode"** — single-model fast response for simple validation queries
+4. **MCP auto-connection guide** — document how to connect Cortex MCP to Claude Code for seamless tool access
