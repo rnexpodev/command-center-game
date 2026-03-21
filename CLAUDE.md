@@ -64,11 +64,12 @@ Pure functions that mutate `GameState` directly (no immutability — performance
 
 ### State (`src/store/`)
 
-Five Zustand stores:
+Six Zustand stores:
 - **`game-store.ts`** — Full `GameState` + actions. Engine functions receive state snapshots, mutate them, and the store replaces its state. The clock lives outside the store (not serializable).
-- **`ui-store.ts`** — UI-only state: selected event/unit IDs, screen routing (`menu` | `game` | `report` | `tutorial` | `career` | `editor`), notification queue.
+- **`ui-store.ts`** — UI-only state: selected event/unit IDs, screen routing (`menu` | `game` | `report` | `tutorial` | `career` | `campaign` | `editor`), notification queue.
 - **`tour-store.ts`** — Guided tour progress, persisted to localStorage.
 - **`career-store.ts`** — Persistent career stats and achievements, persisted to localStorage. Tracks cumulative events resolved, scenarios played, best grades/scores, and unlocked achievements.
+- **`campaign-store.ts`** — Campaign mode progress, persisted to localStorage. Tracks active campaign, current scenario index, completed scenario grades/scores, and bonus units earned.
 - **`editor-store.ts`** — Scenario editor state: waves, events, scenario metadata. Supports save/load to localStorage, JSON export/import. `buildScenario()` converts editor state to a real `Scenario` object for the game engine.
 
 ### Data (`src/data/`)
@@ -83,16 +84,18 @@ Static game content — all data is defined here, not fetched:
 - **`scenarios/`** — 14 scenario definitions (4 classic + 10 missile-focused) with timed event waves.
 - **`achievements.ts`** — 18 achievement definitions across 4 categories (performance, speed, mastery, milestone) with Hebrew names and condition types.
 - **`population.ts`** — Per-neighborhood population counts (keyed by neighborhood ID), total city population constant, and 8 public shelter definitions with coordinates and capacity.
+- **`campaign.ts`** — Campaign definition: "Operation Beer Sheva Shield" with 6 connected scenarios (tutorial through heavy barrage), briefings in Hebrew, grade requirements, and rewards.
 
 ### UI (`src/components/`)
 
-Six screens driven by `ui-store.screen`:
+Seven screens driven by `ui-store.screen`:
 - **`command-center/`** — Main game screen: TopBar (clock/stats/panic meter), EventsPanel (right), CityMap (center, Leaflet), UnitsPanel (left), EventDetail (bottom). PanicMeter shows population-at-risk, evacuated count, and panic level with color-coded LED indicators.
 - **`scenarios/`** — Scenario selection menu.
 - **`post-game/`** — Results screen with three tabs: score summary, performance analytics (response times, force utilization, events by type, key metrics), and after-action replay timeline. Replay includes playback controls, tick scrubber, speed adjustment, and filterable event list.
 - **`tutorial/`** — Animated onboarding with mission briefs and replay.
 - **`tour/`** — 10-step guided tour overlay system.
 - **`career/`** — Career dashboard screen: stats summary, achievement grid (locked/unlocked), best grades table per scenario.
+- **`campaign/`** — Campaign mode: CampaignSelect (vertical timeline of 6 missions with lock/active/complete states), BriefingModal (dramatic pre-mission overlay with fade-in text), CampaignResultOverlay (pass/fail with grade, rewards, continue/retry actions), TimelineItem (individual mission card).
 - **`achievements/`** — Achievement popup toast (animated, gold accent, auto-dismiss) and icon mapper.
 - **`training/`** — Training mode instructor panel: collapsible side panel with event injector (type/severity picker + map click placement), live objectives tracker, and quick actions (add units, clear events). Visible only when `trainingMode` is true.
 - **`editor/`** — Scenario editor screen: 3-column layout with wave list (right in RTL), mini Leaflet map with click-to-place events (center), and event details panel (left in RTL). Top bar has scenario name/difficulty/save/export/import. Bottom bar has play and cancel. Supports save/load from localStorage and JSON import/export.
@@ -107,7 +110,7 @@ Six screens driven by `ui-store.screen`:
 - **All UI text is Hebrew.** Entity names use `nameHe` fields. The HTML root has `lang="he" dir="rtl"`.
 - **`as const` objects instead of enums** — required by `erasableSyntaxOnly` in tsconfig. The pattern is: `export const Foo = { ... } as const; export type Foo = (typeof Foo)[keyof typeof Foo];`
 - **Direct state mutation in engine** — engine functions mutate `GameState` properties directly for performance. The Zustand store creates shallow snapshots before passing state to engine functions, then replaces its state.
-- **Screen routing via Zustand** — no React Router. `ui-store.screen` switches between `"menu"`, `"game"`, `"report"`, `"tutorial"`, `"career"`.
+- **Screen routing via Zustand** — no React Router. `ui-store.screen` switches between `"menu"`, `"game"`, `"report"`, `"tutorial"`, `"career"`, `"editor"`.
 - **Dark theme** — zinc-950 background with operational color coding: red (critical/fire), orange (warning), blue (info/police), green (resolved). Custom CSS variables and animations defined in `src/index.css`.
 - **Map coordinates** — Beer Sheva center: `[31.2518, 34.7913]`. All positions are `[lat, lng]` arrays.
 - **Map icons** — SVG icon registry in `src/data/map-icons.ts` provides both HTML strings (for Leaflet DivIcon) and React components (for sidebar panels). Icons, colors, and Hebrew names are centralized here — no duplication across components.
