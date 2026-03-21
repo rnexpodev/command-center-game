@@ -3,6 +3,8 @@ import { ScenarioSelect } from "@/components/scenarios/ScenarioSelect";
 import { CommandCenter } from "@/components/command-center/CommandCenter";
 import { PostGameReport } from "@/components/post-game/PostGameReport";
 import { TutorialPage } from "@/components/tutorial/TutorialPage";
+import { CareerDashboard } from "@/components/career/CareerDashboard";
+import { AchievementPopup } from "@/components/achievements/AchievementPopup";
 
 function App() {
   const screen = useUIStore((s) => s.screen);
@@ -15,6 +17,8 @@ function App() {
       {screen === "game" && <CommandCenter />}
       {screen === "report" && <PostGameReport />}
       {screen === "tutorial" && <TutorialPage />}
+      {screen === "career" && <CareerDashboard />}
+      <AchievementPopup />
     </div>
   );
 }

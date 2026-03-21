@@ -1,4 +1,11 @@
-import { Shield, AlertTriangle, Flame, Zap, BookOpen } from "lucide-react";
+import {
+  Shield,
+  AlertTriangle,
+  Flame,
+  Zap,
+  BookOpen,
+  Trophy,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Badge,
@@ -56,6 +63,17 @@ export function ScenarioSelect() {
           >
             <BookOpen className="h-4 w-4" />
             איך משחקים?
+          </button>
+          <button
+            onClick={() => setScreen("career")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border border-yellow-500/40",
+              "bg-yellow-500/10 px-3 py-1.5 text-sm font-medium text-yellow-400",
+              "transition-all hover:bg-yellow-500/20 hover:border-yellow-400",
+            )}
+          >
+            <Trophy className="h-4 w-4" />
+            הישגים
           </button>
         </div>
       </div>
