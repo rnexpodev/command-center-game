@@ -96,7 +96,7 @@ export function TopBar() {
       {/* Center: clock */}
       <div className="flex items-center gap-6">
         <div className="text-center" data-tour="clock">
-          <div className="font-mono text-3xl font-bold tracking-widest text-zinc-100">
+          <div className="diegetic-mono text-3xl font-bold tracking-widest text-zinc-100">
             {formatGameTime(tick)}
           </div>
         </div>

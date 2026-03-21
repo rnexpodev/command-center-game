@@ -76,7 +76,7 @@ export function EventDetail() {
 
   return (
     <div
-      className="border-t border-zinc-800 bg-zinc-900/95 backdrop-blur-sm"
+      className="border-t border-zinc-800 bg-zinc-900/95 backdrop-blur-sm diegetic-panel"
       data-tour="event-detail"
     >
       <div className="flex items-start gap-6 px-6 py-4">

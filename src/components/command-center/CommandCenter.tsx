@@ -45,17 +45,17 @@ export function CommandCenter() {
       {/* Main content: Events | Map | Units */}
       <div className="flex min-h-0 flex-1">
         {/* Events panel (right side in RTL) */}
-        <div className="w-72 shrink-0 overflow-hidden">
+        <div className="w-72 shrink-0 overflow-hidden diegetic-scanlines">
           <EventsPanel />
         </div>
 
         {/* Map (center) */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 diegetic-grid">
           <CityMap />
         </div>
 
         {/* Units panel (left side in RTL) */}
-        <div className="w-72 shrink-0 overflow-hidden">
+        <div className="w-72 shrink-0 overflow-hidden diegetic-scanlines">
           <UnitsPanel />
         </div>
       </div>
