@@ -87,6 +87,9 @@ function evaluateCondition(
     case "zeroCasualties":
       return result.totalCasualties === 0;
 
+    case "flawless":
+      return result.totalCasualties === 0 && result.eventsEscalated === 0;
+
     case "firstScenario":
       return stats.totalScenariosPlayed >= 1;
 

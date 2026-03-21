@@ -55,13 +55,16 @@ Pure functions that mutate `GameState` directly (no immutability — performance
 - **`escalation.ts`** — Rules for when untreated events worsen (severity increase, casualty growth, chain spawning).
 - **`scoring.ts`** — Score calculation across 4 categories (response time, stabilization, resource efficiency, casualty prevention). 0–1000 scale, S/A/B/C/D/F grades.
 - **`recorder.ts`** — Singleton `GameRecorder` that records `TimelineEntry` items during gameplay (event spawned/resolved/escalated, unit dispatched/arrived, chain events). Used by the after-action replay in the post-game report.
+- **`achievements.ts`** — Pure achievement condition checker. `checkAchievements(stats, gameResult)` returns newly earned achievement IDs.
+- **`result-builder.ts`** — Extracts a `GameResult` snapshot from completed `GameState` for career tracking.
 
 ### State (`src/store/`)
 
-Three Zustand stores:
+Four Zustand stores:
 - **`game-store.ts`** — Full `GameState` + actions. Engine functions receive state snapshots, mutate them, and the store replaces its state. The clock lives outside the store (not serializable).
-- **`ui-store.ts`** — UI-only state: selected event/unit IDs, screen routing (`menu` | `game` | `report` | `tutorial`), notification queue.
+- **`ui-store.ts`** — UI-only state: selected event/unit IDs, screen routing (`menu` | `game` | `report` | `tutorial` | `career`), notification queue.
 - **`tour-store.ts`** — Guided tour progress, persisted to localStorage.
+- **`career-store.ts`** — Persistent career stats and achievements, persisted to localStorage. Tracks cumulative events resolved, scenarios played, best grades/scores, and unlocked achievements.
 
 ### Data (`src/data/`)
 
@@ -73,15 +76,18 @@ Static game content — all data is defined here, not fetched:
 - **`base-locations.ts`** — 4 unit home base definitions with map coordinates and assigned force types.
 - **`treatment-durations.ts`** — Per-event-type treatment duration tables with context-based scaling (threat radius, casualties, severity).
 - **`scenarios/`** — 14 scenario definitions (4 classic + 10 missile-focused) with timed event waves.
+- **`achievements.ts`** — 18 achievement definitions across 4 categories (performance, speed, mastery, milestone) with Hebrew names and condition types.
 
 ### UI (`src/components/`)
 
-Four screens driven by `ui-store.screen`:
+Five screens driven by `ui-store.screen`:
 - **`command-center/`** — Main game screen: TopBar (clock/stats), EventsPanel (right), CityMap (center, Leaflet), UnitsPanel (left), EventDetail (bottom).
 - **`scenarios/`** — Scenario selection menu.
 - **`post-game/`** — Results screen with two tabs: score summary and after-action replay timeline. Replay includes playback controls, tick scrubber, speed adjustment, and filterable event list.
 - **`tutorial/`** — Animated onboarding with mission briefs and replay.
 - **`tour/`** — 10-step guided tour overlay system.
+- **`career/`** — Career dashboard screen: stats summary, achievement grid (locked/unlocked), best grades table per scenario.
+- **`achievements/`** — Achievement popup toast (animated, gold accent, auto-dismiss) and icon mapper.
 - **`ui/`** — Shared primitives (Badge, IconButton, ProgressBar).
 
 ### Utilities (`src/lib/utils.ts`)
@@ -93,7 +99,7 @@ Four screens driven by `ui-store.screen`:
 - **All UI text is Hebrew.** Entity names use `nameHe` fields. The HTML root has `lang="he" dir="rtl"`.
 - **`as const` objects instead of enums** — required by `erasableSyntaxOnly` in tsconfig. The pattern is: `export const Foo = { ... } as const; export type Foo = (typeof Foo)[keyof typeof Foo];`
 - **Direct state mutation in engine** — engine functions mutate `GameState` properties directly for performance. The Zustand store creates shallow snapshots before passing state to engine functions, then replaces its state.
-- **Screen routing via Zustand** — no React Router. `ui-store.screen` switches between `"menu"`, `"game"`, `"report"`, `"tutorial"`.
+- **Screen routing via Zustand** — no React Router. `ui-store.screen` switches between `"menu"`, `"game"`, `"report"`, `"tutorial"`, `"career"`.
 - **Dark theme** — zinc-950 background with operational color coding: red (critical/fire), orange (warning), blue (info/police), green (resolved). Custom CSS variables and animations defined in `src/index.css`.
 - **Map coordinates** — Beer Sheva center: `[31.2518, 34.7913]`. All positions are `[lat, lng]` arrays.
 - **Map icons** — SVG icon registry in `src/data/map-icons.ts` provides both HTML strings (for Leaflet DivIcon) and React components (for sidebar panels). Icons, colors, and Hebrew names are centralized here — no duplication across components.
