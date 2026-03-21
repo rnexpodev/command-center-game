@@ -9,6 +9,7 @@ import { UnitsPanel } from "./UnitsPanel";
 import { CityMap } from "./CityMap";
 import { EventDetail } from "./EventDetail";
 import { NotificationToast } from "./NotificationToast";
+import { RadioFeed } from "./RadioFeed";
 import { GuidedTour } from "../tour/GuidedTour";
 
 export function CommandCenter() {
@@ -55,8 +56,13 @@ export function CommandCenter() {
         </div>
 
         {/* Units panel (left side in RTL) */}
-        <div className="w-72 shrink-0 overflow-hidden diegetic-scanlines">
+        <div className="w-64 shrink-0 overflow-hidden diegetic-scanlines">
           <UnitsPanel />
+        </div>
+
+        {/* Radio feed (leftmost in RTL) */}
+        <div className="w-56 shrink-0 overflow-hidden diegetic-scanlines">
+          <RadioFeed />
         </div>
       </div>
 
