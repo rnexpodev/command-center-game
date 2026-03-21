@@ -55,6 +55,8 @@ Pure functions that mutate `GameState` directly (no immutability — performance
 - **`escalation.ts`** — Rules for when untreated events worsen (severity increase, casualty growth, chain spawning).
 - **`scoring.ts`** — Score calculation across 4 categories (response time, stabilization, resource efficiency, casualty prevention). 0–1000 scale, S/A/B/C/D/F grades.
 - **`recorder.ts`** — Singleton `GameRecorder` that records `TimelineEntry` items during gameplay (event spawned/resolved/escalated, unit dispatched/arrived, chain events). Used by the after-action replay in the post-game report.
+- **`analytics.ts`** — Pure analytics computation from recorder timeline. `computeAnalytics()` returns response times per event, force utilization, event-type counts, escalation/chain counts, resolution rate, peak concurrent events, and time to first response.
+- **`training.ts`** — Training mode utilities: manual event injection, extra unit spawning, event clearing.
 - **`achievements.ts`** — Pure achievement condition checker. `checkAchievements(stats, gameResult)` returns newly earned achievement IDs.
 - **`result-builder.ts`** — Extracts a `GameResult` snapshot from completed `GameState` for career tracking.
 
@@ -83,7 +85,7 @@ Static game content — all data is defined here, not fetched:
 Five screens driven by `ui-store.screen`:
 - **`command-center/`** — Main game screen: TopBar (clock/stats), EventsPanel (right), CityMap (center, Leaflet), UnitsPanel (left), EventDetail (bottom).
 - **`scenarios/`** — Scenario selection menu.
-- **`post-game/`** — Results screen with two tabs: score summary and after-action replay timeline. Replay includes playback controls, tick scrubber, speed adjustment, and filterable event list.
+- **`post-game/`** — Results screen with three tabs: score summary, performance analytics (response times, force utilization, events by type, key metrics), and after-action replay timeline. Replay includes playback controls, tick scrubber, speed adjustment, and filterable event list.
 - **`tutorial/`** — Animated onboarding with mission briefs and replay.
 - **`tour/`** — 10-step guided tour overlay system.
 - **`career/`** — Career dashboard screen: stats summary, achievement grid (locked/unlocked), best grades table per scenario.

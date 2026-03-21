@@ -1,10 +1,18 @@
 import type { GameState, Scenario } from "./types";
-import { EventStatus, GameSpeed, Severity, UnitStatus } from "./types";
+import {
+  EventStatus,
+  GameSpeed,
+  Severity,
+  TimeOfDay,
+  UnitStatus,
+  Weather,
+} from "./types";
 import { generateId } from "../lib/utils";
 import { spawnEvent, updateEvents } from "./events";
 import { updateUnits } from "./units";
 import { calculateFinalScore, updateScore } from "./scoring";
 import { gameRecorder } from "./recorder";
+import { advanceTimeOfDay } from "./weather";
 
 /** Create a fresh initial game state */
 export function createSimulation(): GameState {
@@ -29,6 +37,9 @@ export function createSimulation(): GameState {
     isComplete: false,
     nextEventId: 1,
     nextUnitId: 1,
+    weather: Weather.CLEAR,
+    timeOfDay: TimeOfDay.DAY,
+    trainingMode: false,
   };
 }
 
@@ -48,6 +59,9 @@ export function tickSimulation(state: GameState): GameState {
 
   // 1. Advance clock
   state.tick += 1;
+
+  // 1b. Advance time of day
+  advanceTimeOfDay(state);
 
   // 2. Check scenario waves
   if (state.activeScenario) {
@@ -87,6 +101,8 @@ export function startScenario(state: GameState, scenario: Scenario): GameState {
   state.activeScenario = scenario;
   state.isRunning = true;
   state.speed = GameSpeed.NORMAL;
+  state.weather = scenario.weather ?? Weather.CLEAR;
+  state.timeOfDay = scenario.startTimeOfDay ?? TimeOfDay.DAY;
 
   // Spawn initial units from scenario
   for (const unitDef of scenario.initialUnits) {

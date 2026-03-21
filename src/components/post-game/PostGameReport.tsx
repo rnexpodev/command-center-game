@@ -1,14 +1,22 @@
 import { useState, useEffect, useRef } from "react";
-import { Trophy, RotateCcw, Home, Film, BarChart3 } from "lucide-react";
+import {
+  Trophy,
+  RotateCcw,
+  Home,
+  Film,
+  BarChart3,
+  Activity,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useUIStore } from "@/store/ui-store";
 import { useCareerStore } from "@/store/career-store";
 import { SummaryView } from "./summary-view";
 import { ReplayView } from "./ReplayView";
+import { AnalyticsView } from "./AnalyticsView";
 import { buildGameResult } from "@/engine/result-builder";
 
-type Tab = "summary" | "replay";
+type Tab = "summary" | "replay" | "analytics";
 
 export function PostGameReport() {
   const [activeTab, setActiveTab] = useState<Tab>("summary");
@@ -45,6 +53,7 @@ export function PostGameReport() {
 
   const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
     { id: "summary", label: "סיכום", icon: BarChart3 },
+    { id: "analytics", label: "ניתוח", icon: Activity },
     { id: "replay", label: "הקלטה", icon: Film },
   ];
 
@@ -84,6 +93,7 @@ export function PostGameReport() {
       {/* Tab content */}
       <div className="mb-10 w-full flex justify-center">
         {activeTab === "summary" && <SummaryView />}
+        {activeTab === "analytics" && <AnalyticsView />}
         {activeTab === "replay" && <ReplayView />}
       </div>
 

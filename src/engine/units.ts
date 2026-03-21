@@ -3,6 +3,7 @@ import { EventStatus, ForceType, UnitStatus } from "./types";
 import { calculateDistance, calculateTravelTime } from "../lib/utils";
 import { gameRecorder, TimelineEventType } from "./recorder";
 import { forceTypeNames } from "../data/map-icons";
+import { getSpeedModifier } from "./weather";
 
 /**
  * Dispatch a unit to an event.
@@ -22,7 +23,8 @@ export function dispatchUnit(
   if (unit.status !== UnitStatus.AVAILABLE) return state;
 
   const distance = calculateDistance(unit.position, event.position);
-  const travelTicks = calculateTravelTime(distance, unit.speed);
+  const speedMod = getSpeedModifier(state.weather, state.timeOfDay);
+  const travelTicks = calculateTravelTime(distance, unit.speed * speedMod);
 
   unit.status = UnitStatus.DISPATCHED;
   unit.targetEventId = eventId;
@@ -55,9 +57,10 @@ export function recallUnit(state: GameState, unitId: string): GameState {
   unit.status = UnitStatus.RETURNING;
   unit.targetEventId = undefined;
 
-  // Calculate return travel time
+  // Calculate return travel time with weather modifier
   const distance = calculateDistance(unit.position, unit.basePosition);
-  const travelTicks = calculateTravelTime(distance, unit.speed);
+  const speedMod = getSpeedModifier(state.weather, state.timeOfDay);
+  const travelTicks = calculateTravelTime(distance, unit.speed * speedMod);
   unit.arrivalTick = state.tick + travelTicks;
 
   return state;
@@ -99,7 +102,9 @@ export function updateUnits(state: GameState): GameState {
           unit.status = UnitStatus.RETURNING;
           unit.targetEventId = undefined;
           const dist = calculateDistance(unit.position, unit.basePosition);
-          unit.arrivalTick = state.tick + calculateTravelTime(dist, unit.speed);
+          const sMod = getSpeedModifier(state.weather, state.timeOfDay);
+          unit.arrivalTick =
+            state.tick + calculateTravelTime(dist, unit.speed * sMod);
           break;
         }
 
@@ -134,8 +139,9 @@ export function updateUnits(state: GameState): GameState {
             unit.status = UnitStatus.RETURNING;
             unit.targetEventId = undefined;
             const dist = calculateDistance(unit.position, unit.basePosition);
+            const sMod = getSpeedModifier(state.weather, state.timeOfDay);
             unit.arrivalTick =
-              state.tick + calculateTravelTime(dist, unit.speed);
+              state.tick + calculateTravelTime(dist, unit.speed * sMod);
           }
         }
         break;

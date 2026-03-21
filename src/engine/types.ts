@@ -69,6 +69,24 @@ export const EventType = {
 } as const;
 export type EventType = (typeof EventType)[keyof typeof EventType];
 
+/** Weather conditions */
+export const Weather = {
+  CLEAR: "clear",
+  RAIN: "rain",
+  SANDSTORM: "sandstorm",
+  HEATWAVE: "heatwave",
+} as const;
+export type Weather = (typeof Weather)[keyof typeof Weather];
+
+/** Time of day */
+export const TimeOfDay = {
+  DAWN: "dawn",
+  DAY: "day",
+  DUSK: "dusk",
+  NIGHT: "night",
+} as const;
+export type TimeOfDay = (typeof TimeOfDay)[keyof typeof TimeOfDay];
+
 /** Game speed multiplier */
 export const GameSpeed = {
   PAUSED: 0,
@@ -189,6 +207,8 @@ export interface Scenario {
   waves: ScenarioWave[];
   durationTicks: number;
   initialUnits: Omit<Unit, "id" | "status" | "targetEventId" | "arrivalTick">[];
+  weather?: Weather;
+  startTimeOfDay?: TimeOfDay;
 }
 
 /** Running score metrics */
@@ -216,4 +236,7 @@ export interface GameState {
   isComplete: boolean;
   nextEventId: number;
   nextUnitId: number;
+  weather: Weather;
+  timeOfDay: TimeOfDay;
+  trainingMode: boolean;
 }

@@ -22,6 +22,7 @@ import {
   severityToLabel,
 } from "@/components/ui/Badge";
 import { IconButton } from "@/components/ui/IconButton";
+import { WeatherIndicator } from "./WeatherIndicator";
 import { GameSpeed, EventStatus, UnitStatus } from "@/engine/types";
 
 const alertLevelColor: Record<number, string> = {
@@ -91,6 +92,10 @@ export function TopBar() {
         <Badge variant={severityToVariant(cityAlert)} size="md">
           {severityToLabel(cityAlert)}
         </Badge>
+
+        <div className="h-6 w-px bg-zinc-700" />
+
+        <WeatherIndicator />
       </div>
 
       {/* Center: clock */}

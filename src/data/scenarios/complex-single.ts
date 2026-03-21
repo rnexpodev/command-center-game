@@ -1,5 +1,11 @@
 import type { Scenario } from "../../engine/types";
-import { Difficulty, EventType, ForceType, Severity } from "../../engine/types";
+import {
+  Difficulty,
+  EventType,
+  ForceType,
+  Severity,
+  Weather,
+} from "../../engine/types";
 
 /**
  * Complex single-incident scenario: Building collapse.
@@ -15,6 +21,7 @@ export const COMPLEX_SINGLE_SCENARIO: Scenario = {
   difficulty: Difficulty.MEDIUM,
   cityId: "beer_sheva",
   durationTicks: 450,
+  weather: Weather.SANDSTORM,
 
   waves: [
     // Wave 1: The collapse itself

@@ -190,3 +190,65 @@ body {
   font-family: "Courier New", monospace;
   letter-spacing: 0.05em;
 }
+
+/* ============================================= */
+/* Weather & Time-of-Day Map Overlays            */
+/* ============================================= */
+
+.weather-overlay {
+  position: relative;
+}
+.weather-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 400;
+  transition: background 1.5s ease-in-out;
+}
+
+/* Rain — subtle blue tint */
+.weather-rain::before {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+/* Sandstorm — amber/tan tint with reduced visibility */
+.weather-sandstorm::before {
+  background: rgba(217, 160, 60, 0.12);
+}
+
+/* Heatwave — no overlay (clear sky + heat shimmer via subtle warm cast) */
+.weather-heatwave::before {
+  background: rgba(239, 68, 68, 0.04);
+}
+
+/* Night — darker overlay */
+.time-night::before {
+  background: rgba(15, 15, 35, 0.25);
+}
+
+/* Dawn — slight warm orange tint */
+.time-dawn::before {
+  background: rgba(251, 146, 60, 0.07);
+}
+
+/* Dusk — slightly deeper orange tint */
+.time-dusk::before {
+  background: rgba(234, 88, 12, 0.09);
+}
+
+/* Combined: rain + night gets both */
+.weather-rain.time-night::before {
+  background: linear-gradient(
+    rgba(59, 130, 246, 0.08),
+    rgba(15, 15, 35, 0.25)
+  );
+}
+
+/* Combined: sandstorm + night */
+.weather-sandstorm.time-night::before {
+  background: linear-gradient(
+    rgba(217, 160, 60, 0.12),
+    rgba(15, 15, 35, 0.2)
+  );
+}

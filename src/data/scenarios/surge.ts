@@ -1,5 +1,12 @@
 import type { Scenario } from "../../engine/types";
-import { Difficulty, EventType, ForceType, Severity } from "../../engine/types";
+import {
+  Difficulty,
+  EventType,
+  ForceType,
+  Severity,
+  Weather,
+  TimeOfDay,
+} from "../../engine/types";
 
 /**
  * Surge scenario: Multiple rapid events across the city.
@@ -14,6 +21,8 @@ export const SURGE_SCENARIO: Scenario = {
   difficulty: Difficulty.HARD,
   cityId: "beer_sheva",
   durationTicks: 600,
+  weather: Weather.RAIN,
+  startTimeOfDay: TimeOfDay.DUSK,
 
   waves: [
     // Wave 1 (tick 5): Flooding + power outage

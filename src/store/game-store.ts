@@ -11,6 +11,12 @@ import {
   recallUnit as engineRecallUnit,
 } from "@/engine/units";
 import { createClock, type ClockManager } from "@/engine/clock";
+import {
+  createManualEvent,
+  addExtraUnits,
+  clearEvents,
+} from "@/engine/training";
+import type { EventType, Position, Severity } from "@/engine/types";
 export { gameRecorder } from "@/engine/recorder";
 
 /** Helper to snapshot the full GameState from the store for engine mutations */
@@ -31,6 +37,9 @@ function snapshotState(prev: GameState): GameState {
     isComplete: prev.isComplete,
     nextEventId: prev.nextEventId,
     nextUnitId: prev.nextUnitId,
+    weather: prev.weather,
+    timeOfDay: prev.timeOfDay,
+    trainingMode: prev.trainingMode,
   };
 }
 
@@ -44,6 +53,10 @@ interface GameActions {
   recallUnit: (unitId: string) => void;
   advanceTick: () => void;
   reset: () => void;
+  setTrainingMode: (mode: boolean) => void;
+  injectEvent: (type: EventType, pos: Position, severity: Severity) => void;
+  addTrainingUnits: () => void;
+  clearAllEvents: () => void;
 }
 
 export type GameStore = GameState & GameActions;
@@ -63,7 +76,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
       clock = null;
     }
 
+    const { trainingMode } = get();
     const fresh = createSimulation();
+    fresh.trainingMode = trainingMode;
     engineStartScenario(fresh, scenario);
     set(fresh);
 
@@ -127,6 +142,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         isComplete: state.isComplete,
         nextEventId: state.nextEventId,
         nextUnitId: state.nextUnitId,
+        weather: state.weather,
+        timeOfDay: state.timeOfDay,
+        trainingMode: state.trainingMode,
       };
     });
   },
@@ -137,5 +155,33 @@ export const useGameStore = create<GameStore>((set, get) => ({
       clock = null;
     }
     set(createSimulation());
+  },
+
+  setTrainingMode(mode: boolean) {
+    set({ trainingMode: mode });
+  },
+
+  injectEvent(type: EventType, pos: Position, severity: Severity) {
+    set((prev) => {
+      const state = snapshotState(prev);
+      createManualEvent(state, type, pos, severity);
+      return { events: state.events, nextEventId: state.nextEventId };
+    });
+  },
+
+  addTrainingUnits() {
+    set((prev) => {
+      const state = snapshotState(prev);
+      addExtraUnits(state);
+      return { units: state.units, nextUnitId: state.nextUnitId };
+    });
+  },
+
+  clearAllEvents() {
+    set((prev) => {
+      const state = snapshotState(prev);
+      clearEvents(state);
+      return { events: state.events, units: state.units };
+    });
   },
 }));
