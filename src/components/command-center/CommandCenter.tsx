@@ -13,6 +13,7 @@ import { EventDetail } from "./EventDetail";
 import { NotificationToast } from "./NotificationToast";
 import { RadioFeed } from "./RadioFeed";
 import { GuidedTour } from "../tour/GuidedTour";
+import { InstructorPanel } from "../training/InstructorPanel";
 
 /** Map weather CSS class from Weather value */
 const weatherClassMap: Record<Weather, string> = {
@@ -38,6 +39,7 @@ export function CommandCenter() {
   const startTour = useTourStore((s) => s.startTour);
   const weather = useGameStore((s) => s.weather);
   const timeOfDay = useGameStore((s) => s.timeOfDay);
+  const trainingMode = useGameStore((s) => s.trainingMode);
 
   // Sound effects — reacts to game state changes
   useSoundEffects();
@@ -90,6 +92,9 @@ export function CommandCenter() {
         <div className="w-56 shrink-0 overflow-hidden diegetic-scanlines">
           <RadioFeed />
         </div>
+
+        {/* Training mode instructor panel */}
+        {trainingMode && <InstructorPanel />}
       </div>
 
       {/* Event detail panel (bottom) */}

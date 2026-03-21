@@ -4,6 +4,8 @@ import { CommandCenter } from "@/components/command-center/CommandCenter";
 import { PostGameReport } from "@/components/post-game/PostGameReport";
 import { TutorialPage } from "@/components/tutorial/TutorialPage";
 import { CareerDashboard } from "@/components/career/CareerDashboard";
+import { CampaignSelect } from "@/components/campaign/CampaignSelect";
+import { ScenarioEditor } from "@/components/editor/ScenarioEditor";
 import { AchievementPopup } from "@/components/achievements/AchievementPopup";
 
 function App() {
@@ -11,13 +13,15 @@ function App() {
 
   return (
     <div
-      className={`w-screen bg-zinc-950 text-zinc-100 ${screen === "game" ? "h-screen overflow-hidden" : "min-h-screen overflow-y-auto"}`}
+      className={`w-screen bg-zinc-950 text-zinc-100 ${screen === "game" || screen === "editor" ? "h-screen overflow-hidden" : "min-h-screen overflow-y-auto"}`}
     >
       {screen === "menu" && <ScenarioSelect />}
       {screen === "game" && <CommandCenter />}
       {screen === "report" && <PostGameReport />}
       {screen === "tutorial" && <TutorialPage />}
       {screen === "career" && <CareerDashboard />}
+      {screen === "campaign" && <CampaignSelect />}
+      {screen === "editor" && <ScenarioEditor />}
       <AchievementPopup />
     </div>
   );

@@ -11,22 +11,37 @@ import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { useUIStore } from "@/store/ui-store";
 import { useCareerStore } from "@/store/career-store";
+import { useCampaignStore } from "@/store/campaign-store";
 import { SummaryView } from "./summary-view";
 import { ReplayView } from "./ReplayView";
 import { AnalyticsView } from "./AnalyticsView";
+import { CampaignResultOverlay } from "../campaign/CampaignResultOverlay";
 import { buildGameResult } from "@/engine/result-builder";
+import { ALL_SCENARIOS } from "@/data/scenarios";
 
 type Tab = "summary" | "replay" | "analytics";
 
 export function PostGameReport() {
   const [activeTab, setActiveTab] = useState<Tab>("summary");
   const reset = useGameStore((s) => s.reset);
+  const score = useGameStore((s) => s.score);
   const setScreen = useUIStore((s) => s.setScreen);
   const activeScenario = useGameStore((s) => s.activeScenario);
   const recordGameResult = useCareerStore((s) => s.recordGameResult);
   const hasRecorded = useRef(false);
 
-  // Record career stats once when report screen mounts
+  // Campaign state
+  const activeCampaignId = useCampaignStore((s) => s.activeCampaignId);
+  const getCurrentScenario = useCampaignStore((s) => s.getCurrentScenario);
+  const getActiveCampaign = useCampaignStore((s) => s.getActiveCampaign);
+  const currentIndex = useCampaignStore((s) => s.currentScenarioIndex);
+  const recordCampaignResult = useCampaignStore((s) => s.recordResult);
+  const advanceToNext = useCampaignStore((s) => s.advanceToNext);
+
+  const campaignScenario = activeCampaignId ? getCurrentScenario() : null;
+  const campaign = activeCampaignId ? getActiveCampaign() : null;
+
+  // Record career + campaign stats once when report screen mounts
   useEffect(() => {
     if (hasRecorded.current) return;
     hasRecorded.current = true;
@@ -34,14 +49,20 @@ export function PostGameReport() {
     if (!state.activeScenario) return;
     const result = buildGameResult(state);
     recordGameResult(result);
-  }, [recordGameResult]);
+    if (campaignScenario) {
+      recordCampaignResult(
+        campaignScenario.id,
+        state.score.grade,
+        state.score.totalScore,
+      );
+    }
+  }, [recordGameResult, campaignScenario, recordCampaignResult]);
 
   function handlePlayAgain() {
     if (activeScenario) {
       const scenario = activeScenario;
       reset();
-      const startScenario = useGameStore.getState().startScenario;
-      startScenario(scenario);
+      useGameStore.getState().startScenario(scenario);
       setScreen("game");
     }
   }
@@ -49,6 +70,23 @@ export function PostGameReport() {
   function handleBackToMenu() {
     reset();
     setScreen("menu");
+  }
+
+  function handleCampaignContinue() {
+    advanceToNext();
+    reset();
+    setScreen("campaign");
+  }
+
+  function handleCampaignRetry() {
+    if (!campaignScenario) return;
+    const scenario = ALL_SCENARIOS.find(
+      (s) => s.id === campaignScenario.scenarioId,
+    );
+    if (!scenario) return;
+    reset();
+    useGameStore.getState().startScenario(scenario);
+    setScreen("game");
   }
 
   const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
@@ -97,31 +135,49 @@ export function PostGameReport() {
         {activeTab === "replay" && <ReplayView />}
       </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-4">
-        <button
-          onClick={handlePlayAgain}
-          className={cn(
-            "flex items-center gap-2 rounded-xl border border-blue-500/40 bg-blue-500/20 px-6 py-3",
-            "text-sm font-semibold text-blue-300 transition-colors",
-            "hover:bg-blue-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-          )}
-        >
-          <RotateCcw className="h-4 w-4" />
-          שחק שוב
-        </button>
-        <button
-          onClick={handleBackToMenu}
-          className={cn(
-            "flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-6 py-3",
-            "text-sm font-semibold text-zinc-300 transition-colors",
-            "hover:bg-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500",
-          )}
-        >
-          <Home className="h-4 w-4" />
-          חזרה לתפריט
-        </button>
-      </div>
+      {/* Campaign result overlay */}
+      {campaignScenario && campaign && (
+        <div className="mb-8">
+          <CampaignResultOverlay
+            scenario={campaignScenario}
+            grade={score.grade}
+            score={score.totalScore}
+            missionNumber={currentIndex + 1}
+            totalMissions={campaign.scenarios.length}
+            isLastMission={currentIndex >= campaign.scenarios.length - 1}
+            onContinue={handleCampaignContinue}
+            onRetry={handleCampaignRetry}
+          />
+        </div>
+      )}
+
+      {/* Standard action buttons (non-campaign) */}
+      {!campaignScenario && (
+        <div className="flex gap-4">
+          <button
+            onClick={handlePlayAgain}
+            className={cn(
+              "flex items-center gap-2 rounded-xl border border-blue-500/40 bg-blue-500/20 px-6 py-3",
+              "text-sm font-semibold text-blue-300 transition-colors",
+              "hover:bg-blue-500/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+            )}
+          >
+            <RotateCcw className="h-4 w-4" />
+            שחק שוב
+          </button>
+          <button
+            onClick={handleBackToMenu}
+            className={cn(
+              "flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-6 py-3",
+              "text-sm font-semibold text-zinc-300 transition-colors",
+              "hover:bg-zinc-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500",
+            )}
+          >
+            <Home className="h-4 w-4" />
+            חזרה לתפריט
+          </button>
+        </div>
+      )}
     </div>
   );
 }

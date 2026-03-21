@@ -5,6 +5,9 @@ import {
   Zap,
   BookOpen,
   Trophy,
+  GraduationCap,
+  Swords,
+  PenTool,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -37,6 +40,8 @@ function countEvents(scenario: Scenario): number {
 
 export function ScenarioSelect() {
   const startScenario = useGameStore((s) => s.startScenario);
+  const trainingMode = useGameStore((s) => s.trainingMode);
+  const setTrainingMode = useGameStore((s) => s.setTrainingMode);
   const setScreen = useUIStore((s) => s.setScreen);
 
   function handleSelect(scenario: Scenario) {
@@ -74,6 +79,40 @@ export function ScenarioSelect() {
           >
             <Trophy className="h-4 w-4" />
             הישגים
+          </button>
+          <button
+            onClick={() => setScreen("campaign")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border border-amber-500/40",
+              "bg-amber-500/10 px-3 py-1.5 text-sm font-medium text-amber-400",
+              "transition-all hover:bg-amber-500/20 hover:border-amber-400",
+            )}
+          >
+            <Swords className="h-4 w-4" />
+            מבצע
+          </button>
+          <button
+            onClick={() => setScreen("editor")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border border-purple-500/40",
+              "bg-purple-500/10 px-3 py-1.5 text-sm font-medium text-purple-400",
+              "transition-all hover:bg-purple-500/20 hover:border-purple-400",
+            )}
+          >
+            <PenTool className="h-4 w-4" />
+            עורך תרחישים
+          </button>
+          <button
+            onClick={() => setTrainingMode(!trainingMode)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-sm font-medium transition-all",
+              trainingMode
+                ? "border-amber-400 bg-amber-500/20 text-amber-300"
+                : "border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:border-amber-400",
+            )}
+          >
+            <GraduationCap className="h-4 w-4" />
+            {trainingMode ? "מצב אימון: פעיל" : "מצב אימון"}
           </button>
         </div>
       </div>

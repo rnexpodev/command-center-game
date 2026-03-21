@@ -19,7 +19,14 @@ interface UIState {
   activePanel: ActivePanel;
   notifications: GameNotification[];
   showPostGame: boolean;
-  screen: "menu" | "game" | "report" | "tutorial" | "career";
+  screen:
+    | "menu"
+    | "game"
+    | "report"
+    | "tutorial"
+    | "career"
+    | "campaign"
+    | "editor";
   soundEnabled: boolean;
   soundVolume: number;
 }
@@ -34,7 +41,14 @@ interface UIActions {
   clearNotifications: () => void;
   setShowPostGame: (show: boolean) => void;
   setScreen: (
-    screen: "menu" | "game" | "report" | "tutorial" | "career",
+    screen:
+      | "menu"
+      | "game"
+      | "report"
+      | "tutorial"
+      | "career"
+      | "campaign"
+      | "editor",
   ) => void;
   setSoundEnabled: (enabled: boolean) => void;
   setSoundVolume: (volume: number) => void;
@@ -109,7 +123,16 @@ export const useUIStore = create<UIStore>((set) => ({
     set({ showPostGame: show });
   },
 
-  setScreen(screen: "menu" | "game" | "report" | "tutorial" | "career") {
+  setScreen(
+    screen:
+      | "menu"
+      | "game"
+      | "report"
+      | "tutorial"
+      | "career"
+      | "campaign"
+      | "editor",
+  ) {
     set({
       screen,
       selectedEventId: null,

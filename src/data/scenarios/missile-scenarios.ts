@@ -1,5 +1,12 @@
 import type { Scenario } from "../../engine/types";
-import { Difficulty, EventType, ForceType, Severity } from "../../engine/types";
+import {
+  Difficulty,
+  EventType,
+  ForceType,
+  Severity,
+  Weather,
+  TimeOfDay,
+} from "../../engine/types";
 
 /**
  * 10 missile strike scenarios for the Beer Sheva Command Center simulation.
@@ -1839,6 +1846,7 @@ export const MISSILE_HEAVY_BARRAGE: Scenario = {
   difficulty: Difficulty.HARD,
   cityId: "beer_sheva",
   durationTicks: 700,
+  startTimeOfDay: TimeOfDay.NIGHT,
 
   waves: [
     // Wave 1 (tick 0): Siren — massive barrage incoming
@@ -2868,6 +2876,8 @@ export const MISSILE_BALLISTIC: Scenario = {
   difficulty: Difficulty.HARD,
   cityId: "beer_sheva",
   durationTicks: 800,
+  weather: Weather.HEATWAVE,
+  startTimeOfDay: TimeOfDay.DAY,
 
   waves: [
     // Wave 1 (tick 0): Ballistic impact

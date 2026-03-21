@@ -1,5 +1,11 @@
 import type { Scenario } from "../../engine/types";
-import { Difficulty, EventType, ForceType, Severity } from "../../engine/types";
+import {
+  Difficulty,
+  EventType,
+  ForceType,
+  Severity,
+  TimeOfDay,
+} from "../../engine/types";
 
 /**
  * Dual emergency scenario: Traffic accident + building fire simultaneously.
@@ -14,6 +20,7 @@ export const DUAL_EMERGENCY_SCENARIO: Scenario = {
   difficulty: Difficulty.EASY,
   cityId: "beer_sheva",
   durationTicks: 400,
+  startTimeOfDay: TimeOfDay.DAWN,
 
   waves: [
     // Wave 1: Both events spawn almost simultaneously

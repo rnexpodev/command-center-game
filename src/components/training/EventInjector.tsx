@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
 import { EventType, Severity, type Position } from "@/engine/types";
 import { EVENT_TYPE_INFO } from "@/data/event-types";
-import { useUIStore } from "@/store/ui-store";
 
 /** All non-missile event types for the dropdown */
 const STANDARD_EVENT_TYPES = [

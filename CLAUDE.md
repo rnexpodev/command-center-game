@@ -92,6 +92,7 @@ Five screens driven by `ui-store.screen`:
 - **`tour/`** — 10-step guided tour overlay system.
 - **`career/`** — Career dashboard screen: stats summary, achievement grid (locked/unlocked), best grades table per scenario.
 - **`achievements/`** — Achievement popup toast (animated, gold accent, auto-dismiss) and icon mapper.
+- **`training/`** — Training mode instructor panel: collapsible side panel with event injector (type/severity picker + map click placement), live objectives tracker, and quick actions (add units, clear events). Visible only when `trainingMode` is true.
 - **`ui/`** — Shared primitives (Badge, IconButton, ProgressBar).
 
 ### Utilities (`src/lib/utils.ts`)
@@ -113,6 +114,7 @@ Five screens driven by `ui-store.screen`:
 - **Treatment durations** — Duration-based resolution replaces flat `resolveRate`. Each event type has base/min/max tick durations scaled by threat radius, casualties, and severity. `GameEvent.treatmentStartTick` and `treatmentDurationTicks` track treatment timeline.
 - **Game recorder** — Singleton `gameRecorder` in `src/engine/recorder.ts` automatically records timeline entries during simulation. Reset on scenario start. Accessed by the post-game replay via `gameRecorder` export from `game-store.ts`.
 - **Civilian state** — `GameState.civilianState` tracks city-wide panic (0–100), population at risk (civilians in event threat zones), and evacuated count. Updated each tick by `civilians.ts`. Panic rises with critical/high events, decays when calm. Population at risk uses neighborhood proximity to active events.
+- **Training mode** — `GameState.trainingMode` flag toggled on the scenario selection screen. When active, the InstructorPanel appears in the command center layout. Instructors can inject events (dropdown + map click), track 4 predefined objectives live, add extra units, and clear all events. Map click injection uses a shared pending-injection state between the EventInjector component and a `useMapEvents` hook in CityMap.
 
 ## Domain Concepts
 

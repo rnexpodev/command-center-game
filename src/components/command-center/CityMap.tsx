@@ -7,6 +7,7 @@ import {
   Circle,
   Polyline,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -27,6 +28,10 @@ import {
   eventTypeNames,
 } from "@/data/map-icons";
 import { baseLocations, baseSvgPaths } from "@/data/base-locations";
+import {
+  getPendingInjection,
+  clearPendingInjection,
+} from "@/components/training/EventInjector";
 
 /** Beer Sheva center coordinates */
 const BEER_SHEVA_CENTER: [number, number] = [31.25, 34.79];
@@ -326,6 +331,30 @@ function RouteLines({
   );
 }
 
+// ── Training mode map click handler ─────────────────────────────────────────
+
+function TrainingMapClick() {
+  const injectEvent = useGameStore((s) => s.injectEvent);
+  const trainingMode = useGameStore((s) => s.trainingMode);
+
+  useMapEvents({
+    click(e) {
+      if (!trainingMode) return;
+      const pending = getPendingInjection();
+      if (!pending) return;
+
+      injectEvent(
+        pending.type,
+        { x: e.latlng.lat, y: e.latlng.lng },
+        pending.severity,
+      );
+      clearPendingInjection();
+    },
+  });
+
+  return null;
+}
+
 // ── Main component ──────────────────────────────────────────────────────────
 
 export function CityMap() {
@@ -392,6 +421,7 @@ export function CityMap() {
       >
         <TileLayer url={DARK_TILE_URL} />
         <MapFlyTo eventId={selectedEventId} />
+        <TrainingMapClick />
 
         {/* 1. Threat radius circles (back-most) */}
         {activeEvents
