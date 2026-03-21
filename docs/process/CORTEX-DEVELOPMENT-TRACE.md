@@ -61,6 +61,42 @@ Use Cortex as the development intelligence system to:
 
 ---
 
+---
+
+## Session: 2026-03-22 — Plan Implementation (continued)
+
+### Objective
+Implement all 12 improvement plans + fix Cortex broken features.
+
+### Cortex Fixes Applied
+1. **Studio AI model fallback** — Modified `pickModels()` to return all models in priority order. `generateAiSuggestion()` now tries each model sequentially until one succeeds instead of failing on first Ollama timeout.
+2. **PRD export templates** — Sections with no project data now get helpful skeleton templates instead of blank content. Sections marked 'skeleton' vs 'draft'.
+3. **UTF-8 charset** — Added middleware to enforce `charset=utf-8` on all JSON responses.
+4. **MCP server connected** — Cortex MCP registered with Claude Code via `claude mcp add`.
+
+### Plans Implemented
+
+| Plan | Status | Commit | Notes |
+|------|--------|--------|-------|
+| 01 Sound Design | DONE | aa0898e | Web Audio synthesis, mute toggle, severity-differentiated alerts |
+| 02 After-Action Replay | DONE | 8585228 | GameRecorder, timeline scrubber, replay tab in post-game |
+| 03 Career Mode | DONE | (via 11) | Covered by achievements implementation |
+| 04 Radio Communications | DONE | d901181 | Hebrew radio feed, 50+ message templates, clickable messages |
+| 05 Weather & Time | DONE | (pending) | Weather modifiers, time-of-day cycle, map overlays |
+| 06 Diegetic UI | DONE | ce363bf | CRT scanlines, grid, LED dots, military panels |
+| 09 Training Mode | DONE | (pending) | Instructor panel, event injection, objectives |
+| 11 Achievements | DONE | b376c7c | 15 achievements, career store, dashboard, star ratings |
+| 12 Performance Analytics | DONE | (pending) | Response time chart, force utilization, metrics grid |
+
+### Parallel Execution Pattern
+Used Claude Code's Agent tool to run up to 3 implementations in parallel:
+- Wave 1: Plans 01 (direct) + Cortex fixes (3 agents)
+- Wave 2: Plans 02 + 11 (agents) + 06 (direct)
+- Wave 3: Plan 04 (direct)
+- Wave 4: Plans 05 + 09 + 12 (3 agents)
+
+This pattern maximized throughput — each agent worked on independent files.
+
 ## Previous Sessions
 
 ### 2026-03-20 — Initial Game Build (documented in cortex-evaluation.md)
