@@ -1,6 +1,8 @@
 import type { GameState, Unit } from "./types";
 import { EventStatus, ForceType, UnitStatus } from "./types";
 import { calculateDistance, calculateTravelTime } from "../lib/utils";
+import { gameRecorder, TimelineEventType } from "./recorder";
+import { forceTypeNames } from "../data/map-icons";
 
 /**
  * Dispatch a unit to an event.
@@ -74,6 +76,15 @@ export function updateUnits(state: GameState): GameState {
       case UnitStatus.DISPATCHED: {
         // Transition to en-route immediately
         unit.status = UnitStatus.EN_ROUTE;
+        const forceName = forceTypeNames[unit.forceType] ?? unit.forceType;
+        gameRecorder.record({
+          tick: state.tick,
+          type: TimelineEventType.UNIT_DISPATCHED,
+          unitId: unit.id,
+          eventId: unit.targetEventId,
+          description: `יחידה נשלחה: ${unit.name} (${forceName})`,
+          position: [unit.position.x, unit.position.y],
+        });
         break;
       }
 
@@ -100,6 +111,16 @@ export function updateUnits(state: GameState): GameState {
           unit.status = UnitStatus.ON_SCENE;
           unit.position = { ...event.position };
           unit.arrivalTick = undefined;
+
+          const arrForceName = forceTypeNames[unit.forceType] ?? unit.forceType;
+          gameRecorder.record({
+            tick: state.tick,
+            type: TimelineEventType.UNIT_ARRIVED,
+            unitId: unit.id,
+            eventId: unit.targetEventId,
+            description: `יחידה הגיעה לזירה: ${unit.name} (${arrForceName})`,
+            position: [event.position.x, event.position.y],
+          });
         }
         break;
       }

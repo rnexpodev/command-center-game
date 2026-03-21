@@ -1,5 +1,7 @@
 import type { GameState } from "./types";
 import { EventStatus, EventType, Severity } from "./types";
+import { gameRecorder, TimelineEventType } from "./recorder";
+import { eventTypeNames } from "../data/map-icons";
 
 /** Configuration for how an event escalates */
 export interface EscalationRule {
@@ -236,6 +238,16 @@ export function escalateEvent(state: GameState, eventId: string): GameState {
 
   // Mark as escalated
   event.status = EventStatus.ESCALATED;
+
+  const typeName = eventTypeNames[event.type] ?? event.type;
+  gameRecorder.record({
+    tick: state.tick,
+    type: TimelineEventType.EVENT_ESCALATED,
+    eventId: event.id,
+    description: `אירוע החמיר: ${typeName} — חומרה ${event.severity}`,
+    position: [event.position.x, event.position.y],
+    severity: event.severity,
+  });
 
   // Reset escalation timer for next potential escalation
   const newRules = getEscalationRules(event.type);

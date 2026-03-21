@@ -54,6 +54,7 @@ Pure functions that mutate `GameState` directly (no immutability — performance
 - **`units.ts`** — Unit dispatch, movement calculation (distance-based travel time), arrival handling.
 - **`escalation.ts`** — Rules for when untreated events worsen (severity increase, casualty growth, chain spawning).
 - **`scoring.ts`** — Score calculation across 4 categories (response time, stabilization, resource efficiency, casualty prevention). 0–1000 scale, S/A/B/C/D/F grades.
+- **`recorder.ts`** — Singleton `GameRecorder` that records `TimelineEntry` items during gameplay (event spawned/resolved/escalated, unit dispatched/arrived, chain events). Used by the after-action replay in the post-game report.
 
 ### State (`src/store/`)
 
@@ -78,7 +79,7 @@ Static game content — all data is defined here, not fetched:
 Four screens driven by `ui-store.screen`:
 - **`command-center/`** — Main game screen: TopBar (clock/stats), EventsPanel (right), CityMap (center, Leaflet), UnitsPanel (left), EventDetail (bottom).
 - **`scenarios/`** — Scenario selection menu.
-- **`post-game/`** — Results screen with score breakdown and grade.
+- **`post-game/`** — Results screen with two tabs: score summary and after-action replay timeline. Replay includes playback controls, tick scrubber, speed adjustment, and filterable event list.
 - **`tutorial/`** — Animated onboarding with mission briefs and replay.
 - **`tour/`** — 10-step guided tour overlay system.
 - **`ui/`** — Shared primitives (Badge, IconButton, ProgressBar).
@@ -100,6 +101,7 @@ Four screens driven by `ui-store.screen`:
 - **Route lines** — Polylines connect units to their targets: dashed for EN_ROUTE, dotted for ON_SCENE, faint for RETURNING. Selected events show white highlight lines to all assigned units.
 - **Base buildings** — 4 static base markers (fire station, police, hospital, municipal) show unit home locations on the map.
 - **Treatment durations** — Duration-based resolution replaces flat `resolveRate`. Each event type has base/min/max tick durations scaled by threat radius, casualties, and severity. `GameEvent.treatmentStartTick` and `treatmentDurationTicks` track treatment timeline.
+- **Game recorder** — Singleton `gameRecorder` in `src/engine/recorder.ts` automatically records timeline entries during simulation. Reset on scenario start. Accessed by the post-game replay via `gameRecorder` export from `game-store.ts`.
 
 ## Domain Concepts
 
@@ -113,7 +115,7 @@ Four screens driven by `ui-store.screen`:
 
 - **`docs/GAME-IDENTITY.md`** — Game categories, competitive positioning, unique value propositions
 - **`docs/COMPETITIVE-ANALYSIS.md`** — 15+ competitor game analyses across 4 tiers with actionable conclusions
-- **`docs/plans/`** — Improvement plans directory: `pending/` (12 plans) and `executed/` (completed)
+- **`docs/plans/`** — Improvement plans directory: `pending/` (plans) and `executed/` (completed: 01-sound-design, 02-after-action-replay, 06-diegetic-ui)
 - **`docs/process/CORTEX-DEVELOPMENT-TRACE.md`** — Cortex usage timeline and issues
 - **`docs/process/DECISION-LOG.md`** — All architectural and product decisions with reasoning
 - **`docs/cortex-evaluation.md`** — Cortex feature ratings from initial build

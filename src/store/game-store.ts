@@ -11,6 +11,7 @@ import {
   recallUnit as engineRecallUnit,
 } from "@/engine/units";
 import { createClock, type ClockManager } from "@/engine/clock";
+export { gameRecorder } from "@/engine/recorder";
 
 /** Helper to snapshot the full GameState from the store for engine mutations */
 function snapshotState(prev: GameState): GameState {

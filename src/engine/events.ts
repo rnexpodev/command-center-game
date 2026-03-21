@@ -9,6 +9,8 @@ import {
 import { generateId } from "../lib/utils";
 import { escalateEvent } from "./escalation";
 import { calculateBaseDuration } from "../data/treatment-durations";
+import { gameRecorder, TimelineEventType } from "./recorder";
+import { eventTypeNames } from "../data/map-icons";
 
 type EventDef = Omit<
   GameEvent,
@@ -34,6 +36,17 @@ export function spawnEvent(state: GameState, eventDef: EventDef): GameState {
     }),
   };
   state.events.push(event);
+
+  const typeName = eventTypeNames[event.type] ?? event.type;
+  gameRecorder.record({
+    tick: state.tick,
+    type: TimelineEventType.EVENT_SPAWNED,
+    eventId: event.id,
+    description: `אירוע חדש: ${typeName} — ${event.locationName}`,
+    position: [event.position.x, event.position.y],
+    severity: event.severity,
+  });
+
   return state;
 }
 
@@ -181,6 +194,14 @@ export function updateEvents(state: GameState): GameState {
 
   // Spawn chain events
   for (const chainDef of newChainEvents) {
+    const chainTypeName = eventTypeNames[chainDef.type] ?? chainDef.type;
+    gameRecorder.record({
+      tick: state.tick,
+      type: TimelineEventType.CHAIN_EVENT,
+      description: `אירוע משני: ${chainTypeName} — ${chainDef.locationName}`,
+      position: [chainDef.position.x, chainDef.position.y],
+      severity: chainDef.severity,
+    });
     spawnEvent(state, chainDef);
   }
 
@@ -194,6 +215,16 @@ export function resolveEvent(state: GameState, eventId: string): GameState {
 
   event.status = EventStatus.RESOLVED;
   event.resolveProgress = 100;
+
+  const typeName = eventTypeNames[event.type] ?? event.type;
+  gameRecorder.record({
+    tick: state.tick,
+    type: TimelineEventType.EVENT_RESOLVED,
+    eventId: event.id,
+    description: `אירוע טופל: ${typeName} — ${event.locationName}`,
+    position: [event.position.x, event.position.y],
+    severity: event.severity,
+  });
 
   // Release units assigned to this event — they start returning
   for (const unit of state.units) {

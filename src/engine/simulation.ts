@@ -4,6 +4,7 @@ import { generateId } from "../lib/utils";
 import { spawnEvent, updateEvents } from "./events";
 import { updateUnits } from "./units";
 import { calculateFinalScore, updateScore } from "./scoring";
+import { gameRecorder } from "./recorder";
 
 /** Create a fresh initial game state */
 export function createSimulation(): GameState {
@@ -76,6 +77,9 @@ export function tickSimulation(state: GameState): GameState {
 
 /** Load a scenario into the game state */
 export function startScenario(state: GameState, scenario: Scenario): GameState {
+  // Reset recorder for new scenario
+  gameRecorder.reset();
+
   // Reset state
   const fresh = createSimulation();
   Object.assign(state, fresh);
