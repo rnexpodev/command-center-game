@@ -93,3 +93,21 @@ export const CHAIN_EVENT_TEMPLATES = [
   "אירוע משני ב{location} — {eventType}.",
   "דיווח נוסף מ{location}: {eventType}.",
 ];
+
+/** Unit returning to base templates */
+export const RETURNING_TEMPLATES = [
+  "{unitName} סיים משימה, חוזר לבסיס.",
+  "{unitName} מתפנה מהזירה, בדרך לבסיס.",
+];
+
+/** Area closed templates */
+export const AREA_CLOSED_TEMPLATES = [
+  "משטרה חסמה את האזור ב{location}. סיכון מופחת.",
+  "אזור {location} נחסם — גישה מוגבלת.",
+];
+
+/** Evacuation started templates */
+export const EVACUATION_STARTED_TEMPLATES = [
+  "פינוי תושבים החל ב{location}.",
+  "יחידת פינוי מפנה אזרחים מ{location}.",
+];

@@ -47,11 +47,11 @@ The codebase has a strict split between the **pure TypeScript simulation engine*
 
 Pure functions that mutate `GameState` directly (no immutability — performance choice):
 
-- **`types.ts`** — All type definitions. Uses `as const` objects + type extraction pattern (not enums) for `erasableSyntaxOnly` compatibility.
+- **`types.ts`** — All type definitions. Uses `as const` objects + type extraction pattern (not enums) for `erasableSyntaxOnly` compatibility. Includes `UnitPhase` (7 granular phases: IDLE→DISPATCHED→EN_ROUTE→ARRIVING→TREATING→WRAPPING_UP→RETURNING), `MatchQuality` (full/partial/none), and per-unit `treatmentContribution`.
 - **`simulation.ts`** — Main game loop: `createSimulation()`, `startScenario()`, `tickSimulation()`. Each tick spawns events, updates escalation, moves units, recalculates score, checks win/lose.
 - **`clock.ts`** — `requestAnimationFrame`-based clock. Controls game speed (Paused/1x/2x/4x).
-- **`events.ts`** — Event spawning from scenario waves, escalation timer detection, chain event generation. Duration-based resolution using `treatmentDurationTicks` from treatment-durations data.
-- **`units.ts`** — Unit dispatch, movement calculation (distance-based travel time with weather speed modifier), arrival handling.
+- **`events.ts`** — Event spawning from scenario waves, escalation timer detection, chain event generation. Duration-based resolution using `treatmentDurationTicks` from treatment-durations data. Per-unit `treatmentContribution` computed each tick. Functional area actions: `closeArea()` (reduces chain events 70%, requires police), `startEvacuation()` (activates civilian evacuation, requires evacuation unit). `areaClosed` flag reduces chain event probability.
+- **`units.ts`** — Unit dispatch, movement calculation (distance-based travel time with weather speed modifier), arrival handling. 7-phase lifecycle with ARRIVING (3 ticks setup) and WRAPPING_UP (3 ticks cleanup) transitional phases.
 - **`weather.ts`** — Weather & time-of-day engine: `getSpeedModifier()` returns travel speed multiplier (rain=0.8, sandstorm=0.5, night=0.85), `getEventSpawnModifier()` boosts spawn probability by weather/event-type, `advanceTimeOfDay()` cycles dawn/day/dusk/night every 150 ticks.
 - **`escalation.ts`** — Rules for when untreated events worsen (severity increase, casualty growth, chain spawning).
 - **`scoring.ts`** — Score calculation across 4 categories (response time, stabilization, resource efficiency, casualty prevention). 0–1000 scale, S/A/B/C/D/F grades.
@@ -65,7 +65,7 @@ Pure functions that mutate `GameState` directly (no immutability — performance
 ### State (`src/store/`)
 
 Six Zustand stores:
-- **`game-store.ts`** — Full `GameState` + actions. Engine functions receive state snapshots, mutate them, and the store replaces its state. The clock lives outside the store (not serializable).
+- **`game-store.ts`** — Full `GameState` + actions (`dispatchUnit`, `recallUnit`, `closeArea`, `startEvacuation`). Engine functions receive state snapshots, mutate them, and the store replaces its state. The clock lives outside the store (not serializable).
 - **`ui-store.ts`** — UI-only state: selected event/unit IDs, screen routing (`menu` | `game` | `report` | `tutorial` | `career` | `campaign` | `editor`), notification queue.
 - **`tour-store.ts`** — Guided tour progress, persisted to localStorage.
 - **`career-store.ts`** — Persistent career stats and achievements, persisted to localStorage. Tracks cumulative events resolved, scenarios played, best grades/scores, and unlocked achievements.
@@ -89,7 +89,7 @@ Static game content — all data is defined here, not fetched:
 ### UI (`src/components/`)
 
 Seven screens driven by `ui-store.screen`:
-- **`command-center/`** — Main game screen: TopBar (clock/stats/panic meter), EventsPanel (right), CityMap (center, Leaflet), UnitsPanel (left), EventDetail (bottom). PanicMeter shows population-at-risk, evacuated count, and panic level with color-coded LED indicators.
+- **`command-center/`** — Main game screen: TopBar (clock/stats/panic meter/situation summary), EventsPanel (right, with force dots and escalation countdown per event), CityMap (center, Leaflet), UnitsPanel (left, rich cards with ETA/progress/contribution per unit), EventDetail (bottom drawer with 3 tabs: status/forces/timeline). PanicMeter shows population-at-risk, evacuated count, and panic level with color-coded LED indicators.
 - **`scenarios/`** — Scenario selection menu.
 - **`post-game/`** — Results screen with three tabs: score summary, performance analytics (response times, force utilization, events by type, key metrics), and after-action replay timeline. Replay includes playback controls, tick scrubber, speed adjustment, and filterable event list.
 - **`tutorial/`** — Animated onboarding with mission briefs and replay.
@@ -118,7 +118,12 @@ Seven screens driven by `ui-store.screen`:
 - **Route lines** — Polylines connect units to their targets: dashed for EN_ROUTE, dotted for ON_SCENE, faint for RETURNING. Selected events show white highlight lines to all assigned units.
 - **Base buildings** — 4 static base markers (fire station, police, hospital, municipal) show unit home locations on the map.
 - **Treatment durations** — Duration-based resolution replaces flat `resolveRate`. Each event type has base/min/max tick durations scaled by threat radius, casualties, and severity. `GameEvent.treatmentStartTick` and `treatmentDurationTicks` track treatment timeline.
-- **Game recorder** — Singleton `gameRecorder` in `src/engine/recorder.ts` automatically records timeline entries during simulation. Reset on scenario start. Accessed by the post-game replay via `gameRecorder` export from `game-store.ts`.
+- **Unit phases** — 7 granular phases (IDLE→DISPATCHED→EN_ROUTE→ARRIVING→TREATING→WRAPPING_UP→RETURNING) tracked per unit via `Unit.phase`. ARRIVING is 3 ticks of setup, WRAPPING_UP is 3 ticks of cleanup. Per-unit `treatmentContribution` (0-1 fraction) and `matchQuality` (full/partial/none) computed each tick.
+- **Area actions** — "Close Area" (requires police ON_SCENE, sets `event.areaClosed`, reduces chain events 70%) and "Evacuate Civilians" (requires evacuation unit ON_SCENE, sets `event.evacuationActive`, moves 50 civilians/tick). Both functional via game-store actions.
+- **EventDetail drawer** — Expandable bottom drawer with 3 tabs: Status (event info + progress + action buttons), Forces (per-unit breakdown with phase/ETA/contribution/match quality), Timeline (chronological event history from gameRecorder).
+- **Situation summary** — TopBar shows critical-unattended count (red pulse), units en-route count, nearest escalation countdown. EventsPanel shows force dots (green=assigned, red=missing) and escalation timers per event card.
+- **Auto radio messages** — Radio feed generates messages for all phase transitions: dispatch, arrival, treatment, wrapping up, returning, area closure, evacuation start. Clickable messages link to events/units.
+- **Game recorder** — Singleton `gameRecorder` in `src/engine/recorder.ts` automatically records timeline entries during simulation. Reset on scenario start. Accessed by the post-game replay and EventDetail timeline tab via `gameRecorder` export from `game-store.ts`.
 - **Civilian state** — `GameState.civilianState` tracks city-wide panic (0–100), population at risk (civilians in event threat zones), and evacuated count. Updated each tick by `civilians.ts`. Panic rises with critical/high events, decays when calm. Population at risk uses neighborhood proximity to active events.
 - **Training mode** — `GameState.trainingMode` flag toggled on the scenario selection screen. When active, the InstructorPanel appears in the command center layout. Instructors can inject events (dropdown + map click), track 4 predefined objectives live, add extra units, and clear all events. Map click injection uses a shared pending-injection state between the EventInjector component and a `useMapEvents` hook in CityMap.
 - **Weather & time of day** — `GameState.weather` (clear/rain/sandstorm/heatwave) and `GameState.timeOfDay` (dawn/day/dusk/night) affect gameplay. Weather slows unit travel (rain 0.8x, sandstorm 0.5x) and boosts certain event spawns. Time advances every 150 ticks. Scenarios can set `weather` and `startTimeOfDay`. TopBar shows weather/time indicators via `WeatherIndicator` component. Map has CSS overlay tints (blue for rain, amber for sandstorm, dark for night, orange for dawn/dusk).

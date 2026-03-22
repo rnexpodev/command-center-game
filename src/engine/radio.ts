@@ -15,6 +15,9 @@ import {
   RESOLVED_TEMPLATES,
   ESCALATION_TEMPLATES,
   CHAIN_EVENT_TEMPLATES,
+  RETURNING_TEMPLATES,
+  AREA_CLOSED_TEMPLATES,
+  EVACUATION_STARTED_TEMPLATES,
 } from "@/data/radio-templates";
 import { eventTypeNames } from "@/data/map-icons";
 
@@ -128,6 +131,57 @@ export function radioEventEscalated(
     sender: "מוקד",
     text,
     priority: RadioPriority.CRITICAL,
+    eventId,
+  };
+}
+
+/** Generate a radio message for unit returning to base */
+export function radioUnitReturning(
+  tick: number,
+  unitId: string,
+  unitName: string,
+): RadioMessage {
+  const text = fillTemplate(pick(RETURNING_TEMPLATES), { unitName });
+  return {
+    id: generateId(),
+    tick,
+    sender: unitName,
+    text,
+    priority: RadioPriority.ROUTINE,
+    unitId,
+  };
+}
+
+/** Generate a radio message for area closure */
+export function radioAreaClosed(
+  tick: number,
+  eventId: string,
+  location: string,
+): RadioMessage {
+  const text = fillTemplate(pick(AREA_CLOSED_TEMPLATES), { location });
+  return {
+    id: generateId(),
+    tick,
+    sender: "מוקד",
+    text,
+    priority: RadioPriority.IMPORTANT,
+    eventId,
+  };
+}
+
+/** Generate a radio message for evacuation start */
+export function radioEvacuationStarted(
+  tick: number,
+  eventId: string,
+  location: string,
+): RadioMessage {
+  const text = fillTemplate(pick(EVACUATION_STARTED_TEMPLATES), { location });
+  return {
+    id: generateId(),
+    tick,
+    sender: "מוקד",
+    text,
+    priority: RadioPriority.IMPORTANT,
     eventId,
   };
 }

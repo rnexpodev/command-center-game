@@ -10,6 +10,10 @@ import {
   dispatchUnit as engineDispatchUnit,
   recallUnit as engineRecallUnit,
 } from "@/engine/units";
+import {
+  closeArea as engineCloseArea,
+  startEvacuation as engineStartEvacuation,
+} from "@/engine/events";
 import { createClock, type ClockManager } from "@/engine/clock";
 import {
   createManualEvent,
@@ -52,6 +56,8 @@ interface GameActions {
   setSpeed: (speed: GameSpeed) => void;
   dispatchUnit: (unitId: string, eventId: string) => void;
   recallUnit: (unitId: string) => void;
+  closeArea: (eventId: string) => boolean;
+  startEvacuation: (eventId: string) => boolean;
   advanceTick: () => void;
   reset: () => void;
   setTrainingMode: (mode: boolean) => void;
@@ -121,6 +127,26 @@ export const useGameStore = create<GameStore>((set, get) => ({
       engineRecallUnit(state, unitId);
       return { events: state.events, units: state.units };
     });
+  },
+
+  closeArea(eventId: string): boolean {
+    let success = false;
+    set((prev) => {
+      const state = snapshotState(prev);
+      success = engineCloseArea(state, eventId);
+      return { events: state.events };
+    });
+    return success;
+  },
+
+  startEvacuation(eventId: string): boolean {
+    let success = false;
+    set((prev) => {
+      const state = snapshotState(prev);
+      success = engineStartEvacuation(state, eventId);
+      return { events: state.events };
+    });
+    return success;
   },
 
   advanceTick() {

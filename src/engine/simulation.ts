@@ -2,8 +2,10 @@ import type { GameState, Scenario } from "./types";
 import {
   EventStatus,
   GameSpeed,
+  MatchQuality,
   Severity,
   TimeOfDay,
+  UnitPhase,
   UnitStatus,
   Weather,
 } from "./types";
@@ -116,8 +118,13 @@ export function startScenario(state: GameState, scenario: Scenario): GameState {
       ...unitDef,
       id: generateId("unit"),
       status: UnitStatus.AVAILABLE,
+      phase: UnitPhase.IDLE,
       targetEventId: undefined,
       arrivalTick: undefined,
+      phaseStartTick: undefined,
+      treatmentStartTick: undefined,
+      treatmentContribution: 0,
+      matchQuality: MatchQuality.NONE,
     };
     state.units.push(unit);
   }

@@ -2,7 +2,7 @@
 // Pure TypeScript — no React imports
 
 import type { EventType, GameState, Position, Severity } from "./types";
-import { EventStatus, UnitStatus } from "./types";
+import { EventStatus, MatchQuality, UnitPhase, UnitStatus } from "./types";
 import { generateId } from "../lib/utils";
 import { EVENT_TYPE_INFO } from "../data/event-types";
 import { UNIT_TEMPLATES } from "../data/unit-types";
@@ -61,6 +61,7 @@ export function addExtraUnits(state: GameState): void {
       name: `${template.nameHe} (אימון)`,
       forceType: template.forceType,
       status: UnitStatus.AVAILABLE,
+      phase: UnitPhase.IDLE,
       position: { ...base.position },
       basePosition: { ...base.position },
       speed: template.speed,
@@ -68,6 +69,8 @@ export function addExtraUnits(state: GameState): void {
       effectiveness: template.effectiveness,
       targetEventId: undefined,
       arrivalTick: undefined,
+      treatmentContribution: 0,
+      matchQuality: MatchQuality.NONE,
     });
   }
 }

@@ -10,6 +10,8 @@ import {
   HelpCircle,
   Volume2,
   VolumeX,
+  Timer,
+  Navigation,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatGameTime } from "@/lib/utils";
@@ -49,12 +51,26 @@ export function TopBar() {
   const soundEnabled = useUIStore((s) => s.soundEnabled);
   const setSoundEnabled = useUIStore((s) => s.setSoundEnabled);
 
-  const activeEvents = events.filter(
-    (e) => e.status !== EventStatus.RESOLVED,
-  ).length;
+  const activeEvents = events.filter((e) => e.status !== EventStatus.RESOLVED);
+  const activeCount = activeEvents.length;
   const availableUnits = units.filter(
     (u) => u.status === UnitStatus.AVAILABLE,
   ).length;
+
+  // Situation summary computations
+  const criticalUnattended = activeEvents.filter(
+    (e) => e.assignedUnits.length === 0 && e.severity >= 3,
+  ).length;
+
+  const unitsEnRoute = units.filter(
+    (u) =>
+      u.status === UnitStatus.EN_ROUTE || u.status === UnitStatus.DISPATCHED,
+  ).length;
+
+  // Nearest escalation across all active events
+  const nearestEscalation = activeEvents
+    .filter((e) => e.escalationTimer > 0 && e.status !== EventStatus.STABILIZED)
+    .reduce((min, e) => Math.min(min, e.escalationTimer), Infinity);
 
   function handleBack() {
     reset();
@@ -108,20 +124,66 @@ export function TopBar() {
         </div>
       </div>
 
-      {/* Left side: stats + speed controls */}
+      {/* Left side: situation summary + speed controls */}
       <div className="flex items-center gap-4">
-        {/* Stats */}
-        <div className="flex items-center gap-4 text-sm" data-tour="status-bar">
+        {/* Situation summary */}
+        <div className="flex items-center gap-3 text-sm" data-tour="status-bar">
+          {/* Active events */}
           <div className="flex items-center gap-1.5 text-zinc-400">
-            <AlertTriangle className="h-4 w-4 text-orange-400" />
-            <span>{activeEvents}</span>
+            <AlertTriangle
+              className={cn(
+                "h-4 w-4",
+                criticalUnattended > 0
+                  ? "text-red-400 animate-pulse"
+                  : "text-orange-400",
+              )}
+            />
+            <span
+              className={cn(
+                criticalUnattended > 0 && "text-red-400 font-semibold",
+              )}
+            >
+              {activeCount}
+            </span>
             <span className="text-zinc-500">אירועים</span>
+            {criticalUnattended > 0 && (
+              <span className="text-red-400 font-semibold text-xs">
+                ({criticalUnattended} ללא מענה!)
+              </span>
+            )}
           </div>
+
+          {/* Available units */}
           <div className="flex items-center gap-1.5 text-zinc-400">
             <Users className="h-4 w-4 text-green-400" />
             <span>{availableUnits}</span>
-            <span className="text-zinc-500">זמינים</span>
+            <span className="text-zinc-500">/{units.length}</span>
           </div>
+
+          {/* Units en route */}
+          {unitsEnRoute > 0 && (
+            <div className="flex items-center gap-1 text-yellow-400">
+              <Navigation className="h-3.5 w-3.5" />
+              <span className="text-xs">{unitsEnRoute} בדרך</span>
+            </div>
+          )}
+
+          {/* Nearest escalation */}
+          {nearestEscalation < Infinity && nearestEscalation < 180 && (
+            <div
+              className={cn(
+                "flex items-center gap-1",
+                nearestEscalation < 60
+                  ? "text-red-400 font-semibold"
+                  : "text-orange-400",
+              )}
+            >
+              <Timer className="h-3.5 w-3.5" />
+              <span className="text-xs">
+                הסלמה {Math.ceil(nearestEscalation / 60)}׳
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="h-6 w-px bg-zinc-700" />

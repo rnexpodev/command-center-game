@@ -32,6 +32,26 @@ export const UnitStatus = {
 } as const;
 export type UnitStatus = (typeof UnitStatus)[keyof typeof UnitStatus];
 
+/** Granular unit phase for display (more detailed than UnitStatus) */
+export const UnitPhase = {
+  IDLE: "idle",
+  DISPATCHED: "dispatched",
+  EN_ROUTE: "en_route",
+  ARRIVING: "arriving",
+  TREATING: "treating",
+  WRAPPING_UP: "wrapping_up",
+  RETURNING: "returning",
+} as const;
+export type UnitPhase = (typeof UnitPhase)[keyof typeof UnitPhase];
+
+/** How well a unit matches the event it's assigned to */
+export const MatchQuality = {
+  FULL: "full",
+  PARTIAL: "partial",
+  NONE: "none",
+} as const;
+export type MatchQuality = (typeof MatchQuality)[keyof typeof MatchQuality];
+
 /** Unit types (Israeli emergency forces) */
 export const ForceType = {
   FIRE: "fire",
@@ -140,6 +160,10 @@ export interface GameEvent {
   treatmentStartTick?: number;
   /** Total ticks expected for resolution (calculated at spawn) */
   treatmentDurationTicks?: number;
+  /** Whether police have closed the area (reduces chain events & population at risk) */
+  areaClosed: boolean;
+  /** Whether civilian evacuation is actively in progress */
+  evacuationActive: boolean;
 }
 
 /** Definition for a chain event that may spawn from a parent */
@@ -179,6 +203,7 @@ export interface Unit {
   name: string;
   forceType: ForceType;
   status: UnitStatus;
+  phase: UnitPhase;
   position: Position;
   basePosition: Position;
   speed: number;
@@ -186,6 +211,14 @@ export interface Unit {
   arrivalTick?: number;
   specialization: string[];
   effectiveness: number;
+  /** Tick when this unit started the current phase (for ARRIVING/WRAPPING_UP timing) */
+  phaseStartTick?: number;
+  /** Per-unit tick when this unit began treating at its current event */
+  treatmentStartTick?: number;
+  /** Fraction of treatment progress this unit contributes (0-1), computed each tick */
+  treatmentContribution: number;
+  /** How well this unit matches the event's required forces */
+  matchQuality: MatchQuality;
 }
 
 /** A wave of events to spawn at a given tick */
@@ -193,7 +226,13 @@ export interface ScenarioWave {
   tick: number;
   events: Omit<
     GameEvent,
-    "id" | "reportedAt" | "assignedUnits" | "status" | "resolveProgress"
+    | "id"
+    | "reportedAt"
+    | "assignedUnits"
+    | "status"
+    | "resolveProgress"
+    | "areaClosed"
+    | "evacuationActive"
   >[];
 }
 
@@ -206,7 +245,18 @@ export interface Scenario {
   cityId: string;
   waves: ScenarioWave[];
   durationTicks: number;
-  initialUnits: Omit<Unit, "id" | "status" | "targetEventId" | "arrivalTick">[];
+  initialUnits: Omit<
+    Unit,
+    | "id"
+    | "status"
+    | "phase"
+    | "targetEventId"
+    | "arrivalTick"
+    | "phaseStartTick"
+    | "treatmentStartTick"
+    | "treatmentContribution"
+    | "matchQuality"
+  >[];
   weather?: Weather;
   startTimeOfDay?: TimeOfDay;
 }

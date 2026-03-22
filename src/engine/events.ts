@@ -3,7 +3,9 @@ import {
   EventStatus,
   EventType,
   ForceType,
+  MatchQuality,
   Severity,
+  UnitPhase,
   UnitStatus,
 } from "./types";
 import { generateId } from "../lib/utils";
@@ -14,7 +16,13 @@ import { eventTypeNames } from "../data/map-icons";
 
 type EventDef = Omit<
   GameEvent,
-  "id" | "reportedAt" | "assignedUnits" | "status" | "resolveProgress"
+  | "id"
+  | "reportedAt"
+  | "assignedUnits"
+  | "status"
+  | "resolveProgress"
+  | "areaClosed"
+  | "evacuationActive"
 >;
 
 /**
@@ -29,6 +37,8 @@ export function spawnEvent(state: GameState, eventDef: EventDef): GameState {
     assignedUnits: [],
     status: EventStatus.REPORTED,
     resolveProgress: 0,
+    areaClosed: false,
+    evacuationActive: false,
     treatmentDurationTicks: calculateBaseDuration(eventDef.type, {
       threatRadius: eventDef.threatRadius,
       casualties: eventDef.casualties,
@@ -53,8 +63,9 @@ export function spawnEvent(state: GameState, eventDef: EventDef): GameState {
 /**
  * Called each tick. Handles:
  * - Escalation timers (events worsen if not attended)
- * - Chain event spawning
- * - Resolution progress (when units are on scene)
+ * - Chain event spawning (reduced by areaClosed)
+ * - Resolution progress (when units are on scene and TREATING)
+ * - Per-unit treatmentContribution calculation
  * - Status transitions
  */
 export function updateEvents(state: GameState): GameState {
@@ -67,11 +78,15 @@ export function updateEvents(state: GameState): GameState {
     // Skip already resolved events
     if (currentStatus === EventStatus.RESOLVED) continue;
 
-    // --- Count on-scene units for this event ---
+    // --- Count on-scene units ACTIVELY TREATING for this event ---
     const onSceneUnits = state.units.filter(
       (u) => u.targetEventId === event.id && u.status === UnitStatus.ON_SCENE,
     );
+    const treatingUnits = onSceneUnits.filter(
+      (u) => u.phase === UnitPhase.TREATING,
+    );
     const hasResponders = onSceneUnits.length > 0;
+    const hasTreaters = treatingUnits.length > 0;
     const hasDispatchedUnits = event.assignedUnits.length > 0 || hasResponders;
 
     // --- Status transitions ---
@@ -83,8 +98,8 @@ export function updateEvents(state: GameState): GameState {
       event.status = EventStatus.RESPONDING;
     }
 
-    // --- Resolution progress ---
-    if (hasResponders) {
+    // --- Resolution progress (only from TREATING units) ---
+    if (hasTreaters) {
       if (
         currentStatus === EventStatus.REPORTED ||
         currentStatus === EventStatus.RESPONDING ||
@@ -93,24 +108,44 @@ export function updateEvents(state: GameState): GameState {
         event.status = EventStatus.RESPONDING;
       }
 
-      // Record when treatment started
+      // Record when treatment started (event-level)
       if (event.treatmentStartTick === undefined) {
         event.treatmentStartTick = state.tick;
       }
 
-      // Calculate unit effectiveness multiplier
-      let unitMultiplier = 0;
-      for (const unit of onSceneUnits) {
+      // Calculate unit effectiveness multiplier and per-unit contributions
+      let totalMultiplier = 0;
+      const unitContributions: { unitId: string; raw: number }[] = [];
+
+      for (const unit of treatingUnits) {
         const isMatchingForce = event.requiredForces.includes(unit.forceType);
         const specializationBonus = unit.specialization.includes(event.type)
           ? 1.5
           : 1.0;
         const matchBonus = isMatchingForce ? 1.0 : 0.3;
-        unitMultiplier += unit.effectiveness * matchBonus * specializationBonus;
+        const raw = unit.effectiveness * matchBonus * specializationBonus;
+        totalMultiplier += raw;
+        unitContributions.push({ unitId: unit.id, raw });
+
+        // Update match quality
+        unit.matchQuality = isMatchingForce
+          ? MatchQuality.FULL
+          : unit.specialization.includes(event.type)
+            ? MatchQuality.PARTIAL
+            : MatchQuality.NONE;
       }
 
-      // Check if all required force types are present
-      const presentForceTypes = new Set(onSceneUnits.map((u) => u.forceType));
+      // Store per-unit contribution fraction
+      for (const { unitId, raw } of unitContributions) {
+        const unit = state.units.find((u) => u.id === unitId);
+        if (unit) {
+          unit.treatmentContribution =
+            totalMultiplier > 0 ? raw / totalMultiplier : 0;
+        }
+      }
+
+      // Check if all required force types are present (among treaters)
+      const presentForceTypes = new Set(treatingUnits.map((u) => u.forceType));
       const requiredMet = event.requiredForces.filter((f) =>
         presentForceTypes.has(f),
       ).length;
@@ -118,17 +153,17 @@ export function updateEvents(state: GameState): GameState {
 
       // Bonus for having all required forces
       if (requiredTotal > 0 && requiredMet === requiredTotal) {
-        unitMultiplier *= 1.5;
+        totalMultiplier *= 1.5;
       }
 
       // Duration-based progress (preferred) or fallback to resolveRate
       let progressIncrement: number;
       if (event.treatmentDurationTicks && event.treatmentDurationTicks > 0) {
         const baseProgress = 100 / event.treatmentDurationTicks;
-        progressIncrement = baseProgress * unitMultiplier;
+        progressIncrement = baseProgress * totalMultiplier;
       } else {
         // Legacy fallback using resolveRate
-        progressIncrement = event.resolveRate * unitMultiplier;
+        progressIncrement = event.resolveRate * totalMultiplier;
       }
 
       event.resolveProgress = Math.min(
@@ -148,6 +183,11 @@ export function updateEvents(state: GameState): GameState {
       if (event.resolveProgress >= 100) {
         resolveEvent(state, event.id);
       }
+    } else {
+      // Clear contributions for units not treating
+      for (const unit of onSceneUnits) {
+        unit.treatmentContribution = 0;
+      }
     }
 
     // --- Escalation timer ---
@@ -159,12 +199,17 @@ export function updateEvents(state: GameState): GameState {
       }
     }
 
-    // --- Chain events ---
+    // --- Chain events (reduced by areaClosed) ---
     if (event.chainEvents) {
       for (const chain of event.chainEvents) {
         const ticksSinceReport = state.tick - event.reportedAt;
         if (ticksSinceReport === chain.delay) {
-          if (Math.random() < chain.probability) {
+          // areaClosed reduces chain event probability by 70%
+          const effectiveProbability = event.areaClosed
+            ? chain.probability * 0.3
+            : chain.probability;
+
+          if (Math.random() < effectiveProbability) {
             const chainEventDef: EventDef = {
               type: chain.type,
               severity: Severity.MEDIUM,
@@ -226,16 +271,53 @@ export function resolveEvent(state: GameState, eventId: string): GameState {
     severity: event.severity,
   });
 
-  // Release units assigned to this event — they start returning
-  for (const unit of state.units) {
-    if (unit.targetEventId === eventId) {
-      unit.status = UnitStatus.RETURNING;
-      unit.targetEventId = undefined;
-      unit.arrivalTick = undefined;
-    }
-  }
+  // Units will transition to WRAPPING_UP via updateUnits when they detect resolved event
+  // Don't force status change here — let the phase system handle it
 
   return state;
+}
+
+/**
+ * Close the area around an event (requires police on scene).
+ * Reduces chain event probability and population at risk.
+ */
+export function closeArea(state: GameState, eventId: string): boolean {
+  const event = state.events.find((e) => e.id === eventId);
+  if (!event || event.areaClosed) return false;
+
+  // Check for police on scene
+  const hasPolice = state.units.some(
+    (u) =>
+      u.targetEventId === eventId &&
+      u.status === UnitStatus.ON_SCENE &&
+      u.forceType === ForceType.POLICE,
+  );
+
+  if (!hasPolice) return false;
+
+  event.areaClosed = true;
+  return true;
+}
+
+/**
+ * Start civilian evacuation at an event (requires evacuation unit on scene).
+ */
+export function startEvacuation(state: GameState, eventId: string): boolean {
+  const event = state.events.find((e) => e.id === eventId);
+  if (!event || event.evacuationActive) return false;
+
+  // Check for evacuation unit on scene
+  const hasEvacUnit = state.units.some(
+    (u) =>
+      u.targetEventId === eventId &&
+      u.status === UnitStatus.ON_SCENE &&
+      u.forceType === ForceType.EVACUATION,
+  );
+
+  if (!hasEvacUnit) return false;
+
+  event.evacuationActive = true;
+  return true;
 }
 
 /** Get default required forces for a chain event type */

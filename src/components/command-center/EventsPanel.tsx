@@ -1,4 +1,4 @@
-import { ShieldAlert, Users } from "lucide-react";
+import { ShieldAlert, Users, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatGameTime } from "@/lib/utils";
 import { useGameStore } from "@/store/game-store";
@@ -9,9 +9,15 @@ import {
   severityToLabel,
 } from "@/components/ui/Badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
-import { EventStatus, Severity, type GameEvent } from "@/engine/types";
+import {
+  EventStatus,
+  Severity,
+  UnitStatus,
+  type GameEvent,
+} from "@/engine/types";
 import {
   EventTypeIcon,
+  ForceTypeIcon,
   eventTypeNames,
   severityColors,
 } from "@/data/map-icons";
@@ -51,6 +57,7 @@ function getProgressVariant(progress: number) {
 
 export function EventsPanel() {
   const events = useGameStore((s) => s.events);
+  const units = useGameStore((s) => s.units);
   const tick = useGameStore((s) => s.tick);
   const selectedEventId = useUIStore((s) => s.selectedEventId);
   const selectEvent = useUIStore((s) => s.selectEvent);
@@ -105,6 +112,28 @@ export function EventsPanel() {
             const isSelected = selectedEventId === event.id;
             const unattended = isUnattended(event);
 
+            // Get assigned force types for this event
+            const assignedForceTypes = new Set(
+              units
+                .filter(
+                  (u) =>
+                    u.targetEventId === event.id &&
+                    u.status !== UnitStatus.AVAILABLE,
+                )
+                .map((u) => u.forceType),
+            );
+            const requiredForcesUnique = [...new Set(event.requiredForces)];
+            const missingForces = requiredForcesUnique.filter(
+              (f) => !assignedForceTypes.has(f),
+            );
+
+            // Escalation urgency
+            const escalationUrgent =
+              event.escalationTimer > 0 &&
+              event.escalationTimer < 120 &&
+              event.status !== EventStatus.RESOLVED &&
+              event.status !== EventStatus.STABILIZED;
+
             return (
               <button
                 key={event.id}
@@ -150,6 +179,31 @@ export function EventsPanel() {
                   </Badge>
                 </div>
 
+                {/* Force dots — shows which forces are assigned/missing */}
+                <div className="mb-2 flex items-center gap-1">
+                  {requiredForcesUnique.map((force) => {
+                    const isAssigned = assignedForceTypes.has(force);
+                    return (
+                      <span
+                        key={force}
+                        title={`${force}: ${isAssigned ? "מוקצה" : "חסר"}`}
+                        className="shrink-0"
+                      >
+                        <ForceTypeIcon
+                          type={force}
+                          size={12}
+                          color={isAssigned ? "#4ade80" : "#f87171"}
+                        />
+                      </span>
+                    );
+                  })}
+                  {missingForces.length > 0 && (
+                    <span className="text-xs text-red-400 ms-1">
+                      חסר {missingForces.length}
+                    </span>
+                  )}
+                </div>
+
                 {/* Progress bar */}
                 {event.resolveProgress > 0 && (
                   <div className="mb-2">
@@ -161,7 +215,7 @@ export function EventsPanel() {
                   </div>
                 )}
 
-                {/* Bottom row: status + time + units */}
+                {/* Bottom row: status + time + escalation + units */}
                 <div className="flex items-center gap-2 text-xs">
                   <Badge variant={statusVariant[event.status]} size="sm">
                     {statusNames[event.status]}
@@ -169,6 +223,15 @@ export function EventsPanel() {
                   <span className="text-zinc-500">
                     {formatGameTime(tick - event.reportedAt)}
                   </span>
+
+                  {/* Escalation countdown */}
+                  {escalationUrgent && (
+                    <span className="flex items-center gap-0.5 text-red-400 font-semibold">
+                      <Timer className="h-3 w-3" />
+                      {Math.ceil(event.escalationTimer / 60)}׳
+                    </span>
+                  )}
+
                   {event.assignedUnits.length > 0 && (
                     <span className="ms-auto flex items-center gap-1 text-zinc-400">
                       <Users className="h-3 w-3" />
@@ -176,6 +239,22 @@ export function EventsPanel() {
                     </span>
                   )}
                 </div>
+
+                {/* Area/evacuation status badges */}
+                {(event.areaClosed || event.evacuationActive) && (
+                  <div className="mt-1.5 flex gap-1.5">
+                    {event.areaClosed && (
+                      <span className="rounded px-1.5 py-0.5 text-xs bg-green-500/10 text-green-400">
+                        חסום
+                      </span>
+                    )}
+                    {event.evacuationActive && (
+                      <span className="rounded px-1.5 py-0.5 text-xs bg-blue-500/10 text-blue-400">
+                        פינוי
+                      </span>
+                    )}
+                  </div>
+                )}
               </button>
             );
           })}
