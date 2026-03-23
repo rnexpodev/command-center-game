@@ -141,11 +141,33 @@ Seven screens driven by `ui-store.screen`:
 - **`docs/GAME-IDENTITY.md`** — Game categories, competitive positioning, unique value propositions
 - **`docs/COMPETITIVE-ANALYSIS.md`** — 15+ competitor game analyses across 4 tiers with actionable conclusions
 - **`docs/plans/`** — Improvement plans directory: `pending/` (plans) and `executed/` (completed: 01-sound-design, 02-after-action-replay, 06-diegetic-ui)
+- **`docs/studio/`** — Studio system docs (workflow guide, hooks/rules/skills reference)
+- **`docs/dev-log/`** — Development journal, screenshots, snapshots
 - **`docs/process/CORTEX-DEVELOPMENT-TRACE.md`** — Cortex usage timeline and issues
 - **`docs/process/DECISION-LOG.md`** — All architectural and product decisions with reasoning
 - **`docs/cortex-evaluation.md`** — Cortex feature ratings from initial build
 - **`docs/cortex-improvements.md`** — Cortex improvement suggestions from field use
 - **`docs/info.md`** — Original Hebrew product specification
+
+## Studio System
+
+Development workflow tools inspired by [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios), adapted for our Vite+React stack. Full docs in `docs/studio/`.
+
+### Hooks (`.claude/hooks/`)
+- **`session-start.sh`** — Loads previous session state, checks project health, detects gaps
+- **`pre-compact.sh`** — Saves session state to `production/session-state/active.md` before context compaction
+- **`validate-commit.sh`** — Checks for: magic numbers in engine, React imports in engine, enums, debug code, hardcoded coordinates, English text in UI
+
+### Path-Scoped Rules (`.claude/rules/`)
+- **`engine-code.md`** (`src/engine/**`) — Pure TypeScript, performance-first, no React, named constants, tick-based time
+- **`ui-code.md`** (`src/components/**`) — Hebrew-first, RTL logical CSS, dark theme tokens, accessibility, max 150 lines
+- **`data-files.md`** (`src/data/**`) — `as const` pattern, Hebrew names, no logic, coordinate convention
+- **`store-code.md`** (`src/store/**`) — Zustand patterns, engine integration via snapshots, selective persistence
+
+### Skills (`.claude/skills/`)
+- **`/balance-check`** — Systematic review of all balance parameters across 8 dimensions
+- **`/playtest-report`** — Structured playtest documentation with screenshots
+- **`/design-review`** — Collaborative protocol: question → options → decision → draft → approval
 
 ## Cortex Integration
 

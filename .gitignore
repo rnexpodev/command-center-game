@@ -7,3 +7,6 @@ dist
 temp/
 
 .cortex/
+
+# Session state (auto-generated, machine-specific)
+production/session-state/
